@@ -28,7 +28,7 @@ function patchRetroPie() {
         # PATCH 1
         # encapsulate the RetroPie update function with our own, so we get to repatch after they update
         # rename the original function away
-        sed -i '/s//' scriptmodules/admin/setup.sh
+        sed -i 'function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' scriptmodules/admin/setup.sh
         # append our wrapper function
         cat scripts/updatescript_setup.sh >> scriptmodules/admin/setup.sh
 
