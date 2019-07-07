@@ -5,7 +5,7 @@
 
 # check we are running as root for all of the install work
 if [ "$EUID" -ne 0 ]; then
-    echo -e "\n***\nPlease run as sudo.\nThis is needed for installing any dependancies as we go and for the final package.\n***"
+    echo -e "\n***\nPlease run as sudo.\nThis is needed for installing any dependancies as we go and for running RetroPie-Setup.\n***"
     exit
 fi
 
