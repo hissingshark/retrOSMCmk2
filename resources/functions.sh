@@ -26,6 +26,13 @@ function patchRetroPie() {
     # re-apply patches if RetroPie has been updated
     if [[ patched_version -ne $retropie_version ]]; then
         # PATCH 1
+        # encapsulate the RetroPie update function with our own, so we get to repatch after they update
+        # rename the original function away
+        sed -i '/s//' scriptmodules/admin/setup.sh
+        # append our wrapper function
+        cat scripts/updatescript_setup.sh >> scriptmodules/admin/setup.sh
+
+        # PATCH 2
         # use tvservice-shim instead of the real thing
         local runcommand_path
         if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
@@ -40,7 +47,7 @@ function patchRetroPie() {
         fi
         sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"~\/retrOSMCmk2\/scripts\/tvservice-shim\"/' runcommand_path
 
-        # PATCH 2
+        # PATCH 3
         # make binaries available for Vero4K
 
         # we are up-to-date now
