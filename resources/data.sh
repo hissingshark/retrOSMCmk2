@@ -1,2 +1,2 @@
-first_run=0
-patched_version=1234567
+first_run=1
+patched_version=0
