@@ -2,57 +2,62 @@
 
 # perform initial installation
 function firstTimeSetup() {
-    if [[ first_run -eq 1 ]]; then
-        # get dependancies
-        sudo apt-get install -f git dialog
+    # get dependancies
+    echo -e "\nInstalling required dependancies...\n"
+    apt-get install -y git dialog || echo "FAILED!" && exit
+    echo "SUCCESS!\n\n"
 
-        # obtain RetroPie
-        git clone --recursive https://github.com/RetroPie/RetroPie-Setup.git
+    # get RetroPie-Setup
+    echo -e "Installing RetroPie-Setup...\n"
+    git clone --recursive https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!" && exit
+    echo "SUCCESS!\n\n"
 
-        # install EmulationStation launch service
-        cp scripts/emulationstation.service /etc/systemd/system/
-        systemctl daemon-reload
+    # install EmulationStation launch service
+    echo -e "Installing emulationstation.service...\n"
+    mv scripts/emulationstation.service /etc/systemd/system/ || echo "FAILED!" && exit
+    systemctl daemon-reload || echo "FAILED!" && exit
+    echo "SUCCESS!\n\n"
 
-        # not do this again
-        first_run=0
+    # install scripts into RetroPie directory
+    # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
+    if [[ ! -d /home/osmc/RetroPie/scripts]]; then
+        mkdir -p /home/osmc/RetroPie/scripts
     fi
+    mv scripts/* /home/osmc/RetroPie/scripts
+
+    # not do this again
+    first_run=0
 }
 
 # re-patch Retropie after an update
 function patchRetroPie() {
-    # obtain current RetroPie commit
-    local retropie_version=$(git -C RetroPie-Setup/ log -1 --pretty=format:"%h")
+    # PATCH 1
+    # encapsulate the RetroPie update function with our own, so we get to repatch after they update
+    # rename the original function away
+    sed -i 'function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' RetroPie-Setup/scriptmodules/admin/setup.sh
+    # append our wrapper function
+    cat resources/updatescript_setup.sh >> RetroPie-Setup/scriptmodules/admin/setup.sh
 
-    # re-apply patches if RetroPie has been updated
-    if [[ patched_version -ne $retropie_version ]]; then
-        # PATCH 1
-        # encapsulate the RetroPie update function with our own, so we get to repatch after they update
-        # rename the original function away
-        sed -i 'function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' scriptmodules/admin/setup.sh
-        # append our wrapper function
-        cat scripts/updatescript_setup.sh >> scriptmodules/admin/setup.sh
-
-        # PATCH 2
-        # use tvservice-shim instead of the real thing
-        local runcommand_path
-        if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
-            # working version patched in place
-            runcommand_path="/opt/retropie/supplementary/runcommand/runcommand.sh"
-        elif [[ -e "./RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh" ]]; then
-            # runcommand not installed yet, so patch the resource instead
-            runcommand_path="./RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh"
-        else
-            echo -e "FATAL ERROR!\nCannot patch runcommand.sh\nFile does not exist!\n"
-            exit
-        fi
-        sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"~\/retrOSMCmk2\/scripts\/tvservice-shim\"/' runcommand_path
-
-        # PATCH 3
-        # make binaries available for Vero4K
-
-        # we are up-to-date now
-        patched_version=retropie_version
+    # PATCH 2
+    # use tvservice-shim instead of the real thing
+    local runcommand_path
+    if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
+        # working version patched in place
+        runcommand_path="/opt/retropie/supplementary/runcommand/runcommand.sh"
+    elif [[ -e "RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh" ]]; then
+        # runcommand not installed yet, so patch the resource instead
+        runcommand_path="RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh"
+    else
+        echo -e "FATAL ERROR!\nCannot patch runcommand.sh\nFile does not exist!\n"
+        exit
     fi
+    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim\"/' runcommand_path
+
+    # PATCH 3
+    # make binaries available for Vero4K
+
+    # we are up-to-date now
+    patched_version=retropie_version
 
     writeData
 

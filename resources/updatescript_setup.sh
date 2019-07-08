@@ -3,6 +3,7 @@
 function updatescript_setup() {
     # call the original function
     updatescript_setup_original
-    # patch upon exit
-    calling patch function
+
+    # patch before exit
+    $scriptdir/../setup.sh PATCH
 }

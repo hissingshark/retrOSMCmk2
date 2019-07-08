@@ -34,16 +34,16 @@ fi
     while true; do
         exec 3>&1
         selection=$(dialog \
-            --backtitle "retrOSMC mk2 - Installing RetroPie-Setup on your Vero4K" \
-            --title "Setup Menu" \
+            --backtitle "Hyperion$tag Setup on Vero4K" \
+            --title "Hyperion$tag" \
             --clear \
             --cancel-label "Back" \
             --item-help \
             --menu "Please select:" 0 0 4 \
-            "1" "Update retrOSMCmk2" "Pulls the latest version of this script from the repository" \
-            "2" "Run RetroPie-Setup" "Run RetroPie-Setup" \
+            "1" "Install from binary" "Install from binary" \
+            "2" "Build from source" "Build from source" \
             "3" "Uninstall" "Uninstall" \
-            "4" "Install Launcher" "Install Launcher" \
+            "4" "Post Installation" "Post Installation" \
             2>&1 1>&3)
         ret_val=$?
         exec 3>&-
@@ -62,15 +62,31 @@ fi
         case $selection in
             0 )
                 clear
-                echo "Program terminated."
+                echo "Program terminated @004." #004
                 ;;
             1 )
+                dialog --backtitle "Hyperion$tag Setup on Vero4K - Install from binary" --title "Advice" --msgbox \
+"This will install a prebuilt version of Hyperion$tag with all of the Vero4K compatible compilation options enabled.\n
+\n
+Of course this will use a little more file space and possibly more CPU resources, for features you may not need.\n
+\n\
+It will also be an older version, so consider building from source once you've tried things out." 0 0
+
+                if (dialog --backtitle "Hyperion$tag Setup on Vero4K - Install from binary" --title "PROCEED?" --defaultno --no-label "Abort" --yesno "This will delete any previous build files and folders you may have.\n\nIt will attempt to preserve old configs..." 0 0); then
+                    cd $REPO_DIR/hyperion_$edition/prebuilt_$edition
+                    install_relative
+                fi
                 ;;
             2 )
+                dialog --backtitle "Hyperion$tag Setup on Vero4K - Build from source" --title "Advice" --msgbox "$build_advice" 0 0
+                cd $REPO_DIR/hyperion_$edition
+                build_from_source
                 ;;
             3 )
+                uninstall
                 ;;
             4 )
+                post_installation
                 ;;
         esac
     done
