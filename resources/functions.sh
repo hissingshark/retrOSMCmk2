@@ -9,7 +9,7 @@ function firstTimeSetup() {
 
     # get RetroPie-Setup
     echo -e "Installing RetroPie-Setup...\n"
-    git clone --recursive https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!" && exit
+    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!" && exit
     echo "SUCCESS!\n\n"
 
     # install EmulationStation launch service
