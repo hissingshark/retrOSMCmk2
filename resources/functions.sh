@@ -20,7 +20,7 @@ function firstTimeSetup() {
 
     # install scripts into RetroPie directory
     # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
-    if [[ ! -d /home/osmc/RetroPie/scripts]]; then
+    if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
     mv scripts/* /home/osmc/RetroPie/scripts
@@ -31,6 +31,11 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
+clear
+echo "Patching happening..."
+sleep 2
+return 0
+
     # PATCH 1
     # encapsulate the RetroPie update function with our own, so we get to repatch after they update
     # rename the original function away
@@ -55,6 +60,8 @@ function patchRetroPie() {
 
     # PATCH 3
     # make binaries available for Vero4K
+    sed -i '/__binary_host="/s/.*/__binary_host="hissingshark.co.uk"/' RetroPie-Setup/scriptmodules/system.sh
+    sed -i '/__has_binaries=/s/0/1/' RetroPie-Setup/scriptmodules/system.sh
 
     # we are up-to-date now
     patched_version=retropie_version
@@ -66,7 +73,7 @@ function patchRetroPie() {
 
 # save variables to disk
 function writeData() {
-    cat << EOF > ./resources/data.sh
+    cat << EOF > resources/data.sh
 first_run=$first_run
 retropie_version=$retropie_version
 EOF

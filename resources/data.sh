@@ -1,2 +1,2 @@
-first_run=1
-patched_version=0
+first_run=0
+retropie_version=
