@@ -16,13 +16,12 @@ DIALOG_ESC=255
 # perform initial installation
 function firstTimeSetup() {
     # get dependancies
-    echo  "\nInstalling required dependancies..."
+    echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
     apt-get install -y git dialog || { echo "FAILED!"; exit 1; }
     echo -e "SUCCESS!\n"
 
     # get RetroPie-Setup
     echo "Installing RetroPie-Setup..."
-#    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
     git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
     echo "SUCCESS!\n"
 
