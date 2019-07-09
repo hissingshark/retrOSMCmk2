@@ -36,7 +36,7 @@ function firstTimeSetup() {
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    cp resources/launcher.sh resources/tvservice-shim /home/osmc/RetroPie/scripts
+    cp resources/launch.sh resources/tvservice-shim /home/osmc/RetroPie/scripts
 
     return 0
 }
