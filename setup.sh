@@ -3,10 +3,10 @@
 # check we are running as root for all of the install work
 if [ "$EUID" -ne 0 ]; then
     echo -e "\n***\nPlease run as sudo.\nThis is needed for installing any dependencies as we go and for running RetroPie-Setup.\n***"
-    exit
+    exit 1
 fi
 
-# all operations performed relative to script directory
+# all operations performed relative to this script
 pushd $(dirname "${BASH_SOURCE[0]}") >/dev/null
 
 # load variables and functions
@@ -19,33 +19,21 @@ DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
 
-# RetroPie-Setup will - post update - call this script specifically to restore the lost patches
-if [[ "$1" == "PATCH" ]]; then
-    patchRetroPie
-    popd >/dev/null
-    return 0
-fi
-
 # perform initial setup if this is the 1st run
 if [[ first_run -eq 1 ]]; then
     firstTimeSetup
 fi
 
-# we should check user hasn't removed RetroPie-Setup via its menu and reinstall if we need to
-if [[ ! -d ./RetroPie-Setup ]]; then
-    echo "Not there..."
-#exit
-#    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!"
-else
-    echo "Got it apparently"
+# RetroPie-Setup will - post update - call this script specifically to restore the lost patches
+if [[ "$1" == "PATCH" ]]; then
+    patchRetroPie
+    popd >/dev/null
+    exit 0
 fi
-sleep 1
 
 # RetroPie is not yet patched at fresh install, nor if something went wrong after an update
-retropie_version=$(git -C submodule/RetroPie-Setup/ log -1 --pretty=format:"%h")
-if [[ patched_version != retropie_version ]]; then
-    patchRetroPie
-fi
+# ensure we aren't re-patching patched files.  Breakage may result!
+[[ $(grep 'retrOSMC_Patched' submodule/RetroPie-Setup/scriptmodules/admin/setup.sh | wc -l) -eq 0 ]] && patchRetroPie
 
 # dialog menu here
     while true; do
