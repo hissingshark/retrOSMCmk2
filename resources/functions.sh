@@ -4,26 +4,26 @@
 function firstTimeSetup() {
     # get dependancies
     echo -e "\nInstalling required dependancies...\n"
-    apt-get install -y git dialog || echo "FAILED!" && exit
-    echo "SUCCESS!\n\n"
+    apt-get install -y git dialog || { echo "FAILED!"; exit; }
+    echo -e "SUCCESS!\n\n"
 
     # get RetroPie-Setup
     echo -e "Installing RetroPie-Setup...\n"
-    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!" && exit
+    git submodule add -f https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
     echo "SUCCESS!\n\n"
 
     # install EmulationStation launch service
     echo -e "Installing emulationstation.service...\n"
-    mv scripts/emulationstation.service /etc/systemd/system/ || echo "FAILED!" && exit
-    systemctl daemon-reload || echo "FAILED!" && exit
-    echo "SUCCESS!\n\n"
+    cp scripts/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit; }
+    systemctl daemon-reload || { echo "FAILED!"; exit; }
+    echo -e "SUCCESS!\n\n"
 
     # install scripts into RetroPie directory
     # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    mv scripts/* /home/osmc/RetroPie/scripts
+    cp scripts/* /home/osmc/RetroPie/scripts
 
     # not do this again
     first_run=0
@@ -31,11 +31,6 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
-clear
-echo "Patching happening..."
-sleep 2
-return 0
-
     # PATCH 1
     # encapsulate the RetroPie update function with our own, so we get to repatch after they update
     # rename the original function away

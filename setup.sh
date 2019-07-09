@@ -32,7 +32,14 @@ if [[ first_run -eq 1 ]]; then
 fi
 
 # we should check user hasn't removed RetroPie-Setup via its menu and reinstall if we need to
-# TODO
+if [[ ! -d ./RetroPie-Setup ]]; then
+    echo "Not there..."
+exit
+#    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!"
+else
+    echo "Got it apparently"
+fi
+sleep 2
 
 # RetroPie is not yet patched at fresh install, nor if something went wrong after an update
 retropie_version=$(git -C RetroPie-Setup/ log -1 --pretty=format:"%h")
@@ -53,7 +60,7 @@ fi
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
             "1" "Reinstall RetroPie-Setup" "Reinstall the RetroPie-Setup script." \
             "2" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository." \
-            "3" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The RetroPie emulators remain installed." \
+            "3" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The emulators remain installed to avoid lost configs and wasted compilation.  Use RetroPie-Setup to remove these." \
             "4" "Install launcher addon" "Installs an addon to launch Emulationstation directly from Kodi." \
             "5" "Help" "Some general explanations." \
             2>&1 1>&3)
