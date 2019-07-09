@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# load variables and functions
-. ./resources/data.sh
-
 #############
 # constants #
 #############
@@ -31,7 +28,7 @@ function firstTimeSetup() {
 
     # install EmulationStation launch service
     echo "Installing emulationstation.service..."
-    cp scripts/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
+    cp resources/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
     systemctl daemon-reload || { echo "FAILED!"; exit 1; }
     echo -e "SUCCESS!\n"
 
@@ -40,12 +37,8 @@ function firstTimeSetup() {
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    cp scripts/launcher.sh scripts/tvservice-shim /home/osmc/RetroPie/scripts
+    cp resources/launcher.sh resources/tvservice-shim /home/osmc/RetroPie/scripts
 
-    # not do this again
-    first_run=0
-
-    writeData
     return 0
 }
 
@@ -89,8 +82,8 @@ fi
 # all operations performed relative to this script
 pushd $(dirname "${BASH_SOURCE[0]}") >/dev/null
 
-# perform initial setup if this is the 1st run
-if [[ first_run -eq 1 ]]; then
+# perform initial setup if this is the 1st run - determined by presence of RetroPie-Setup
+if [[ ! -d submodule/RetroPie-Setup ]]; then
     firstTimeSetup
 fi
 
