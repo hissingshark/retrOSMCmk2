@@ -106,13 +106,13 @@ fi
             --clear \
             --cancel-label "Quit" \
             --item-help \
-            --menu "Please select:" 0 0 5 \
+            --menu "Please select:" 0 0 6 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
-            "1" "Reinstall RetroPie-Setup" "Reinstall the RetroPie-Setup script." \
-            "2" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository." \
-            "3" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The emulators remain installed to avoid lost configs and wasted compilation.  Use RetroPie-Setup to remove these." \
-            "4" "Install launcher addon" "Installs an addon to launch Emulationstation directly from Kodi." \
-            "5" "Help" "Some general explanations." \
+            "2" "Reinstall RetroPie-Setup" "Reinstall the RetroPie-Setup script." \
+            "3" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository." \
+            "4" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The emulators remain installed to avoid lost configs and wasted compilation.  Use RetroPie-Setup to remove these." \
+            "5" "Install launcher addon" "Installs an addon to launch Emulationstation directly from Kodi." \
+            "6" "Help" "Some general explanations." \
             2>&1 1>&3)
         ret_val=$?
         exec 3>&-
@@ -140,6 +140,10 @@ fi
                 submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
             2 )
+                clear
+                rm -r submodule/RetroPie-Setup
+                firstTimeSetup
+                patchRetroPie
                 ;;
             3 )
                 ;;
