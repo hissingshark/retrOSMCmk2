@@ -5,5 +5,5 @@ function updatescript_setup() {
     updatescript_setup_original
 
     # patch before exit
-    $scriptdir/../setup.sh PATCH
+    $scriptdir/../../setup.sh PATCH
 }

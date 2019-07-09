@@ -42,7 +42,7 @@ fi
 sleep 1
 
 # RetroPie is not yet patched at fresh install, nor if something went wrong after an update
-retropie_version=$(git -C RetroPie-Setup/ log -1 --pretty=format:"%h")
+retropie_version=$(git -C submodule/RetroPie-Setup/ log -1 --pretty=format:"%h")
 if [[ patched_version != retropie_version ]]; then
     patchRetroPie
 fi
@@ -87,6 +87,7 @@ fi
                 break
                 ;;
             1 )
+                submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
             2 )
                 ;;

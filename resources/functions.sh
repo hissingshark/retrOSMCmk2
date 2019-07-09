@@ -9,7 +9,8 @@ function firstTimeSetup() {
 
     # get RetroPie-Setup
     echo -e "Installing RetroPie-Setup...\n"
-    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
+#    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
+    git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
     echo "SUCCESS!\n\n"
 
     # install EmulationStation launch service
@@ -37,9 +38,9 @@ function patchRetroPie() {
     # PATCH 1
     # encapsulate the RetroPie update function with our own, so we get to repatch after they update
     # rename the original function away
-    sed -i '/function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' RetroPie-Setup/scriptmodules/admin/setup.sh
+    sed -i '/function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
     # append our wrapper function
-    cat resources/updatescript_setup.sh >> RetroPie-Setup/scriptmodules/admin/setup.sh
+    cat resources/updatescript_setup.sh >> submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
 
     # PATCH 2
     # use tvservice-shim instead of the real thing
@@ -47,9 +48,9 @@ function patchRetroPie() {
     if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
         # working version patched in place
         runcommand_path="/opt/retropie/supplementary/runcommand/runcommand.sh"
-    elif [[ -e "RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh" ]]; then
+    elif [[ -e "submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh" ]]; then
         # runcommand not installed yet, so patch the resource instead
-        runcommand_path="RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh"
+        runcommand_path="submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh"
     else
         echo -e "FATAL ERROR!\nCannot patch runcommand.sh\nFile does not exist!\n"
         exit
@@ -58,8 +59,8 @@ function patchRetroPie() {
 
     # PATCH 3
     # make binaries available for Vero4K
-    sed -i '/__binary_host="/s/.*/__binary_host="hissingshark.co.uk"/' RetroPie-Setup/scriptmodules/system.sh
-    sed -i '/__has_binaries=/s/0/1/' RetroPie-Setup/scriptmodules/system.sh
+    sed -i '/__binary_host="/s/.*/__binary_host="hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+    sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
     # we are up-to-date now
     patched_version=$retropie_version
