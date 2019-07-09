@@ -1,0 +1,3 @@
+[submodule "RetroPie-Setup"]
+	path = RetroPie-Setup
+	url = https://github.com/RetroPie/RetroPie-Setup.git

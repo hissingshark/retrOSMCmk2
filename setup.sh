@@ -34,16 +34,16 @@ fi
 # we should check user hasn't removed RetroPie-Setup via its menu and reinstall if we need to
 if [[ ! -d ./RetroPie-Setup ]]; then
     echo "Not there..."
-exit
+#exit
 #    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || echo "FAILED!"
 else
     echo "Got it apparently"
 fi
-sleep 2
+sleep 1
 
 # RetroPie is not yet patched at fresh install, nor if something went wrong after an update
 retropie_version=$(git -C RetroPie-Setup/ log -1 --pretty=format:"%h")
-if [[ patched_version -ne retropie_version ]]; then
+if [[ patched_version != retropie_version ]]; then
     patchRetroPie
 fi
 

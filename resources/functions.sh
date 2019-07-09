@@ -9,7 +9,7 @@ function firstTimeSetup() {
 
     # get RetroPie-Setup
     echo -e "Installing RetroPie-Setup...\n"
-    git submodule add -f https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
+    git submodule add https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit; }
     echo "SUCCESS!\n\n"
 
     # install EmulationStation launch service
@@ -27,6 +27,9 @@ function firstTimeSetup() {
 
     # not do this again
     first_run=0
+
+    writeData
+    return 0
 }
 
 # re-patch Retropie after an update
@@ -34,7 +37,7 @@ function patchRetroPie() {
     # PATCH 1
     # encapsulate the RetroPie update function with our own, so we get to repatch after they update
     # rename the original function away
-    sed -i 'function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' RetroPie-Setup/scriptmodules/admin/setup.sh
+    sed -i '/function updatescript_setup/s/updatescript_setup/updatescript_setup_original/' RetroPie-Setup/scriptmodules/admin/setup.sh
     # append our wrapper function
     cat resources/updatescript_setup.sh >> RetroPie-Setup/scriptmodules/admin/setup.sh
 
@@ -51,7 +54,7 @@ function patchRetroPie() {
         echo -e "FATAL ERROR!\nCannot patch runcommand.sh\nFile does not exist!\n"
         exit
     fi
-    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim\"/' runcommand_path
+    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim\"/' $runcommand_path
 
     # PATCH 3
     # make binaries available for Vero4K
@@ -59,7 +62,7 @@ function patchRetroPie() {
     sed -i '/__has_binaries=/s/0/1/' RetroPie-Setup/scriptmodules/system.sh
 
     # we are up-to-date now
-    patched_version=retropie_version
+    patched_version=$retropie_version
 
     writeData
 
