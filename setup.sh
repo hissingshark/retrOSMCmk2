@@ -61,8 +61,8 @@ function patchRetroPie() {
 
     # PATCH 3
     # make binaries available for Vero4K
-    sed -i '/__binary_host="/s/.*/__binary_host="hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
-    sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
+#    sed -i '/__binary_host="/s/.*/__binary_host="hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+#    sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
     return 0
 }
