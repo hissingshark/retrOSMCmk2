@@ -5,6 +5,7 @@
 #############
 
 LOGO='retrOSMCmk2'
+BACKTITLE="$LOGO - Installing RetroPie on your Vero4K"
 DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
@@ -104,7 +105,7 @@ fi
     while true; do
         exec 3>&1
         selection=$(dialog \
-            --backtitle "$LOGO - Installing RetroPie-Setup on your Vero4K" \
+            --backtitle "$BACKTITLE" \
             --title "Setup Menu" \
             --clear \
             --cancel-label "Quit" \
@@ -151,6 +152,28 @@ fi
             3 )
                 ;;
             4 )
+                ;;
+            5 )
+                ;;
+            6 )
+                clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "HELP" \
+                  --msgbox "\
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
+                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
+                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\n\
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
+                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
+                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\n\
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
+                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
+                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\
+                  " 25 100
                 ;;
         esac
     done
