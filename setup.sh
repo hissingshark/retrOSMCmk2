@@ -39,6 +39,18 @@ function firstTimeSetup() {
     fi
     cp resources/launch.sh resources/tvservice-shim /home/osmc/RetroPie/scripts
 
+    # install Emulationstation launching Kodi addon
+    cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/
+
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "INSTALLATION COMPLETE" \
+      --msgbox "\
+      \n$LOGO has just installed RetroPie and its Kodi addon for you.\
+      \n\nPlease run RetroPie-Setup from the next menu to start installing your chosen emulators.\
+      \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
+      " 0 0
+
     return 0
 }
 
@@ -161,19 +173,9 @@ fi
                   --backtitle "$BACKTITLE" \
                   --title "HELP" \
                   --msgbox "\
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\n\
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\n\
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\
-                  " 25 100
+                    \nPlease run RetroPie-Setup from the menu to install/update/remove your chosen emulators.\
+                    \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
+                    " 0 0
                 ;;
         esac
     done
