@@ -64,13 +64,13 @@ function patchRetroPie() {
     cat resources/updatescript_setup.sh >> submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
 
     # PATCH 2
-    # use tvservice-shim instead of the real thing
+    # use tvservice-shim and fbset-shim instead of the real thing
     if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
         # installed version patched in place
-        sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim\"/' /opt/retropie/supplementary/runcommand/runcommand.sh
+        sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' /opt/retropie/supplementary/runcommand/runcommand.sh
     fi
     # patch the resource file regardless as there may be a re-install from there later
-    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
+    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
 
     # PATCH 3
     # make binaries available for Vero4K
