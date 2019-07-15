@@ -22,9 +22,12 @@ function firstTimeSetup() {
     echo -e "SUCCESS!\n"
 
     # get RetroPie-Setup
-    echo "Installing RetroPie-Setup..."
-    git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
-    echo "SUCCESS!\n"
+    # if present we only want update the installer, so leave it untouched
+    if [[ ! -d submodule/RetroPie-Setup ]]; then
+        echo "Installing RetroPie-Setup..."
+        git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
+        echo "SUCCESS!\n"
+    fi
 
     # install EmulationStation launch service
     echo "Installing emulationstation.service..."
@@ -67,6 +70,8 @@ function patchRetroPie() {
     # use tvservice-shim and fbset-shim instead of the real thing
     if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
         # installed version patched in place
+        # needs a fresh copy to work on, before we patch the original resource file
+        cp submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh /opt/retropie/supplementary/runcommand/runcommand.sh
         sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' /opt/retropie/supplementary/runcommand/runcommand.sh
     fi
     # patch the resource file regardless as there may be a re-install from there later
@@ -125,7 +130,7 @@ fi
             --menu "Please select:" 0 0 6 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
             "2" "Reinstall RetroPie-Setup" "Reinstall the RetroPie-Setup script." \
-            "3" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository." \
+            "3" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository and re-installs its scripts." \
             "4" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The emulators remain installed to avoid lost configs and wasted compilation.  Use RetroPie-Setup to remove these." \
             "5" "Install launcher addon" "Installs an addon to launch Emulationstation directly from Kodi." \
             "6" "Help" "Some general explanations." \
@@ -153,15 +158,26 @@ fi
                 break
                 ;;
             1 )
+                # launch RetroPie-Setup
                 submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
             2 )
                 clear
+                # remove and re-install and re-patch RetroPie-Setup
+# TODO this inadvertantly updates RPS unless we check which commit it was at before deleting it...
                 rm -r submodule/RetroPie-Setup
                 firstTimeSetup
                 patchRetroPie
                 ;;
             3 )
+                clear
+                # update this installer
+                git reset --hard HEAD
+                git pull
+                # clean RetroPie-Setup ready for re-patching, but don't update it
+                git reset -C submodule/RetroPie-Setup --hard HEAD
+                firstTimeSetup
+                patchRetroPie
                 ;;
             4 )
                 ;;
