@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 #############
-# constants #
+# CONSTANTS #
 #############
 
 LOGO='retrOSMCmk2'
@@ -10,9 +11,10 @@ DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
 
-#############
-# FUNCTIONS #
-#############
+
+###################
+# SETUP FUNCTIONS #
+###################
 
 # perform initial installation
 function firstTimeSetup() {
@@ -89,6 +91,19 @@ function patchRetroPie() {
 }
 
 
+##################
+# MENU FUNCTIONS #
+##################
+
+#function menuManageRPS() {
+
+#}
+
+#function menuManageThis() {
+
+#}
+
+
 #########################
 # EXECUTION STARTS HERE #
 #########################
@@ -129,11 +144,10 @@ fi
             --item-help \
             --menu "Please select:" 0 0 6 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
-            "2" "Reinstall RetroPie-Setup" "Reinstall the RetroPie-Setup script." \
-            "3" "Update $LOGO" "Pulls the latest version of this $LOGO script from the repository and re-installs its scripts." \
-            "4" "Uninstall $LOGO" "Uninstalls this $LOGO script and RetroPie-Setup.  The emulators remain installed to avoid lost configs and wasted compilation.  Use RetroPie-Setup to remove these." \
-            "5" "Install launcher addon" "Installs an addon to launch Emulationstation directly from Kodi." \
-            "6" "Help" "Some general explanations." \
+            "2" "Manage RetroPie-Setup" "Re-install, update or remove RetroPie-Setup." \
+            "3" "Manage $LOGO" "Re-install, update or remove $LOGO (this installer!)." \
+            "4" "Manage Launcher Addon" "Re-install, update or remove the Launcher Addon." \
+            "5" "Help" "Some general explanations." \
             2>&1 1>&3)
         ret_val=$?
         exec 3>&-
@@ -158,25 +172,30 @@ fi
                 break
                 ;;
             1 )
+                # Run RetroPie-Setup
+                clear
                 # launch RetroPie-Setup
                 submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
             2 )
+                # Reinstall RetroPie-Setup
                 clear
                 # remove and re-install and re-patch RetroPie-Setup
-# TODO this inadvertantly updates RPS unless we check which commit it was at before deleting it...
+                # a simpe re-clone inadvertantly updates RPS unless we check which commit it was at before deleting it...
+                rps_version=$(git log -C --pretty=format:'%H' -n 1)
                 rm -r submodule/RetroPie-Setup
                 firstTimeSetup
+                git reset -C submodule/RetroPie-Setup --hard $rps_version
                 patchRetroPie
                 ;;
             3 )
+                # Update (this installer)
                 clear
-                # update this installer
                 git reset --hard HEAD
                 git pull
+                firstTimeSetup
                 # clean RetroPie-Setup ready for re-patching, but don't update it
                 git reset -C submodule/RetroPie-Setup --hard HEAD
-                firstTimeSetup
                 patchRetroPie
                 ;;
             4 )
