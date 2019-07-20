@@ -107,7 +107,7 @@ function menuManageRPS() {
             --clear \
             --cancel-label "Go Back" \
             --item-help \
-            --menu "Please select:" 0 0 6 \
+            --menu "Please select:" 0 0 2 \
             "1" "Re-install RetroPie-Setup" "Select for a more detailed explanation." \
             "2" "Update RetroPie-Setup" "Select for a more detailed explanation." \
             2>&1 1>&3)
@@ -126,12 +126,12 @@ function menuManageRPS() {
         esac
 
         case $selection in
-            0 )
+            0)
                 clear
                 echo "Program terminated."
                 break
                 ;;
-            1 )
+            1)
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
@@ -143,7 +143,7 @@ function menuManageRPS() {
                     \n\nYour emulators and configs will be preserved however.\
                     \nIf problems persist you may need to delete those too.\
                     \n\nIn that case you need to run RetroPie-Setup from the previous menu and remove it from there.\
-                    " 0 0 || return
+                    " 0 0 || continue
 
                 # Re-install (remove -> re-clone ->re-patch) RetroPie-Setup
                 # a simpe re-clone inadvertantly updates RPS unless we check which commit it was at before deleting it...
@@ -154,7 +154,7 @@ function menuManageRPS() {
                 git reset -C submodule/RetroPie-Setup --hard $rps_version
                 patchRetroPie
                 ;;
-            2 )
+            2)
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
@@ -176,7 +176,7 @@ function menuManageThis() {
             --clear \
             --cancel-label "Go Back" \
             --item-help \
-            --menu "Please select:" 0 0 6 \
+            --menu "Please select:" 0 0 2 \
             "1" "Re-install $LOGO" "Select for a more detailed explanation." \
             "2" "Update $LOGO" "Select for a more detailed explanation." \
             2>&1 1>&3)
@@ -195,12 +195,12 @@ function menuManageThis() {
         esac
 
         case $selection in
-            0 )
+            0)
                 clear
                 echo "Program terminated."
                 break
                 ;;
-            1 )
+            1)
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
@@ -210,7 +210,7 @@ function menuManageThis() {
                     \nThis will delete and then re-install $LOGO (this installer) - remaining at the current version.\
                     \nRetroPie and RetroPie-Setup will be untouched.\
                     \n\nIt is intended to fix mild corruption of your installation.\
-                    " 0 0 || return
+                    " 0 0 || continue
 
                 # Re-install (remove -> re-clone) this installer
                 # a simpe re-clone inadvertantly updates it unless we check which commit it was at before refreshing it...
@@ -230,7 +230,7 @@ function menuManageThis() {
                 # re-apply components
                 firstTimeSetup
                 ;;
-            2 )
+            2)
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
@@ -240,7 +240,7 @@ function menuManageThis() {
                     \nThis will update $LOGO (this installer).\
                     \nRetroPie-Setup will be cleaned, but stay at the same version.\
                     \nRetroPie itself(your emulators and their configs) will be untouched.\
-                    " 0 0 || return
+                    " 0 0 || continue
 
                 git reset --hard HEAD
                 git pull
@@ -290,7 +290,7 @@ fi
             --clear \
             --cancel-label "Quit" \
             --item-help \
-            --menu "Please select:" 0 0 6 \
+            --menu "Please select:" 0 0 5 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
             "2" "Manage RetroPie-Setup" "Re-install or update RetroPie-Setup." \
             "3" "Manage $LOGO" "Re-install, update or remove $LOGO (this installer!)." \
@@ -314,50 +314,41 @@ fi
         esac
 
         case $selection in
-            0 )
+            0)
                 clear
                 echo "Program terminated."
                 break
                 ;;
-            1 )
+            1)
                 # Run RetroPie-Setup
                 clear
                 # launch RetroPie-Setup
                 submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
-            2 )
-                # Reinstall RetroPie-Setup
-                clear
-                # remove and re-install and re-patch RetroPie-Setup
-                # a simpe re-clone inadvertantly updates RPS unless we check which commit it was at before deleting it...
-                rps_version=$(git log -C --pretty=format:'%H' -n 1)
-                rm -r submodule/RetroPie-Setup
-                firstTimeSetup
-                git reset -C submodule/RetroPie-Setup --hard $rps_version
-                patchRetroPie
+            2)
+                # manage RetroPie-Setup
+                menuManageRPS
                 ;;
-            3 )
-                # Update (this installer)
-                clear
-                git reset --hard HEAD
-                git pull
-                firstTimeSetup
-                # clean RetroPie-Setup ready for re-patching, but don't update it
-                git reset -C submodule/RetroPie-Setup --hard HEAD
-                patchRetroPie
+            3)
+                # manage this installer
+                menuManageThis
                 ;;
-            4 )
+            4)
+                # manage the Kodi Addon/Launcher
                 ;;
-            5 )
-                ;;
-            6 )
+            5)
+                # display help
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
                   --title "HELP" \
                   --msgbox "\
-                    \nPlease run RetroPie-Setup from the menu to install/update/remove your chosen emulators.\
-                    \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
+                    \nRetroPie = Your emulators and their configuration files.  You launch it from Kodi with the addon.\
+                    \n\nRetroPie-Setup = The tool for installing/updating/removing emulators in RetroPie.\
+                    \n\n$LOGO = This installer, that installs the RetroPie-Setuo tool and makes the whole thing work on the Vero4K\
+                    \n\nPlease run RetroPie-Setup from the menu to install/update/remove your chosen emulators.\
+                    \nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
+                    \n\
                     " 0 0
                 ;;
         esac
