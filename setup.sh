@@ -247,7 +247,7 @@ function menuManageThis() {
                 mv submodule/RetroPie-Setup /tmp
                 # delete and re-clone installer
                 target=$(pwd)
-                cd $..
+                cd $target/..
                 rm -r $target
                 git clone https://github.com/hissingshark/retrOSMCmk2.git
                 cd $target
