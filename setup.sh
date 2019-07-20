@@ -98,13 +98,158 @@ function patchRetroPie() {
 # MENU FUNCTIONS #
 ##################
 
-#function menuManageRPS() {
+function menuManageRPS() {
+    while true; do
+        exec 3>&1
+        selection=$(dialog \
+            --backtitle "$BACKTITLE" \
+            --title "Manage RetroPie-Setup" \
+            --clear \
+            --cancel-label "Go Back" \
+            --item-help \
+            --menu "Please select:" 0 0 6 \
+            "1" "Re-install RetroPie-Setup" "Select for a more detailed explanation." \
+            "2" "Update RetroPie-Setup" "Select for a more detailed explanation." \
+            2>&1 1>&3)
+        ret_val=$?
+        exec 3>&-
 
-#}
+        case $ret_val in
+            $DIALOG_CANCEL)
+                clear
+                return
+                ;;
+            $DIALOG_ESC)
+                clear
+        return
+                ;;
+        esac
 
-#function menuManageThis() {
+        case $selection in
+            0 )
+                clear
+                echo "Program terminated."
+                break
+                ;;
+            1 )
+                clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "Re-install RetroPie-Setup" \
+                  --defaultno --no-label "Abort" --yes-label "Re-install" \
+                  --yesno "\
+                    \nThis will delete and then re-install RetroPie-Setup - remaining at the current version.\
+                    \nIt is intended to fix mild corruption of your installation.\
+                    \n\nYour emulators and configs will be preserved however.\
+                    \nIf problems persist you may need to delete those too.\
+                    \n\nIn that case you need to run RetroPie-Setup from the previous menu and remove it from there.\
+                    " 0 0 || return
 
-#}
+                # Re-install (remove -> re-clone ->re-patch) RetroPie-Setup
+                # a simpe re-clone inadvertantly updates RPS unless we check which commit it was at before deleting it...
+                clear
+                rps_version=$(git log -C submodule/RetroPie-Setup --pretty=format:'%H' -n 1)
+                rm -r submodule/RetroPie-Setup
+                firstTimeSetup
+                git reset -C submodule/RetroPie-Setup --hard $rps_version
+                patchRetroPie
+                ;;
+            2 )
+                clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "Update RetroPie-Setup" \
+                  --msgbox "\
+                    \nPlease run RetroPie-Setup from the previous menu and update it from there.\
+                    " 0 0
+                ;;
+        esac
+    done
+}
+
+function menuManageThis() {
+    while true; do
+        exec 3>&1
+        selection=$(dialog \
+            --backtitle "$BACKTITLE" \
+            --title "Manage $LOGO" \
+            --clear \
+            --cancel-label "Go Back" \
+            --item-help \
+            --menu "Please select:" 0 0 6 \
+            "1" "Re-install $LOGO" "Select for a more detailed explanation." \
+            "2" "Update $LOGO" "Select for a more detailed explanation." \
+            2>&1 1>&3)
+        ret_val=$?
+        exec 3>&-
+
+        case $ret_val in
+            $DIALOG_CANCEL)
+                clear
+                return
+                ;;
+            $DIALOG_ESC)
+                clear
+        return
+                ;;
+        esac
+
+        case $selection in
+            0 )
+                clear
+                echo "Program terminated."
+                break
+                ;;
+            1 )
+                clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "Re-install $LOGO" \
+                  --defaultno --no-label "Abort" --yes-label "Re-install" \
+                  --yesno "\
+                    \nThis will delete and then re-install $LOGO (this installer) - remaining at the current version.\
+                    \nRetroPie and RetroPie-Setup will be untouched.\
+                    \n\nIt is intended to fix mild corruption of your installation.\
+                    " 0 0 || return
+
+                # Re-install (remove -> re-clone) this installer
+                # a simpe re-clone inadvertantly updates it unless we check which commit it was at before refreshing it...
+                installer_version=$(git log --pretty=format:'%H' -n 1)
+                # move our submodule out of the way
+                mv submodule/RetroPie-Setup /tmp
+                # delete and re-clone installer
+                target=$(pwd)
+                cd $..
+                rm -r $target
+                git clone https://github.com/hissingshark/retrOSMCmk2.git
+                cd $target
+                # restore our submodule now or firstTimeSetup will re-clone it
+                mv /tmp/RetroPie-Setup submodule/
+                # revert to last version
+                git reset --hard $installer_version
+                # re-apply components
+                firstTimeSetup
+                ;;
+            2 )
+                clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "Update $LOGO" \
+                  --defaultno --no-label "Abort" --yes-label "Re-install" \
+                  --yesno "\
+                    \nThis will update $LOGO (this installer).\
+                    \nRetroPie-Setup will be cleaned, but stay at the same version.\
+                    \nRetroPie itself(your emulators and their configs) will be untouched.\
+                    " 0 0 || return
+
+                git reset --hard HEAD
+                git pull
+                firstTimeSetup
+                patchRetroPie
+                ;;
+        esac
+    done
+}
 
 
 #########################
@@ -147,7 +292,7 @@ fi
             --item-help \
             --menu "Please select:" 0 0 6 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
-            "2" "Manage RetroPie-Setup" "Re-install, update or remove RetroPie-Setup." \
+            "2" "Manage RetroPie-Setup" "Re-install or update RetroPie-Setup." \
             "3" "Manage $LOGO" "Re-install, update or remove $LOGO (this installer!)." \
             "4" "Manage Launcher Addon" "Re-install, update or remove the Launcher Addon." \
             "5" "Help" "Some general explanations." \
