@@ -115,9 +115,6 @@ function patchRetroPie() {
     sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
     sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-    # PATCH 4
-    # temporarily add Vero4K+ support
-    sed -i '/Vero4K)/s/)/ | Vero4KPlus)/' submodule/RetroPie-Setup/scriptmodules/system.sh
     return 0
 }
 
