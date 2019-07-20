@@ -244,6 +244,7 @@ function menuManageThis() {
                 # a simpe re-clone inadvertantly updates it unless we check which commit it was at before refreshing it...
                 installer_version=$(git log --pretty=format:'%H' -n 1)
                 # move our submodule out of the way
+                rm -rf /tmp/RetroPie-Setup
                 mv submodule/RetroPie-Setup /tmp
                 # delete and re-clone installer
                 target=$(pwd)
