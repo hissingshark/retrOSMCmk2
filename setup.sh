@@ -21,21 +21,49 @@ function firstTimeSetup() {
     # get dependancies
     echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
     apt-get install -y git dialog || { echo "FAILED!"; exit 1; }
-    echo -e "SUCCESS!\n"
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "First Time Setup" \
+      --infobox "\
+      \nSUCCESS!\n\
+      " 0 0
 
     # get RetroPie-Setup
     # if present we only want update the installer, so leave it untouched
     if [[ ! -d submodule/RetroPie-Setup ]]; then
-        echo "Installing RetroPie-Setup..."
+        dialog \
+          --backtitle "$BACKTITLE" \
+          --title "First Time Setup" \
+          --infobox "\
+          \nInstalling RetroPie-Setup...\n\
+          " 0 0
         git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
-        echo -e "SUCCESS!\n"
+        clear
+        dialog \
+          --backtitle "$BACKTITLE" \
+          --title "First Time Setup" \
+          --infobox "\
+          \nSUCCESS!\n\
+          " 0 0
     fi
 
     # install EmulationStation launch service
-    echo "Installing emulationstation.service..."
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "First Time Setup" \
+      --infobox "\
+      \nInstalling emulationstation.service...\n\
+      " 0 0
     cp resources/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
     systemctl daemon-reload || { echo "FAILED!"; exit 1; }
-    echo -e "SUCCESS!\n"
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "First Time Setup" \
+      --infobox "\
+      \nSUCCESS!\n\
+      " 0 0
 
     # install scripts into RetroPie directory
     # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
@@ -290,12 +318,11 @@ fi
             --clear \
             --cancel-label "Quit" \
             --item-help \
-            --menu "Please select:" 0 0 5 \
+            --menu "Please select:" 0 0 4 \
             "1" "Run RetroPie-Setup" "Runs the RetroPie-Setup script." \
             "2" "Manage RetroPie-Setup" "Re-install or update RetroPie-Setup." \
             "3" "Manage $LOGO" "Re-install, update or remove $LOGO (this installer!)." \
-            "4" "Manage Launcher Addon" "Re-install, update or remove the Launcher Addon." \
-            "5" "Help" "Some general explanations." \
+            "4" "Help" "Some general explanations." \
             2>&1 1>&3)
         ret_val=$?
         exec 3>&-
@@ -322,6 +349,13 @@ fi
             1)
                 # Run RetroPie-Setup
                 clear
+                dialog \
+                  --backtitle "$BACKTITLE" \
+                  --title "Progress" \
+                  --infobox "\
+                  \nLaunching RetroPie-Setup...\n\
+                  " 0 0
+
                 # launch RetroPie-Setup
                 submodule/RetroPie-Setup/retropie_setup.sh
                 ;;
@@ -334,9 +368,6 @@ fi
                 menuManageThis
                 ;;
             4)
-                # manage the Kodi Addon/Launcher
-                ;;
-            5)
                 # display help
                 clear
                 dialog \
