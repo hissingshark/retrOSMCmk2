@@ -28,7 +28,7 @@ function firstTimeSetup() {
     if [[ ! -d submodule/RetroPie-Setup ]]; then
         echo "Installing RetroPie-Setup..."
         git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
-        echo "SUCCESS!\n"
+        echo -e "SUCCESS!\n"
     fi
 
     # install EmulationStation launch service
@@ -42,7 +42,7 @@ function firstTimeSetup() {
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    cp resources/launch.sh resources/tvservice-shim /home/osmc/RetroPie/scripts
+    cp resources/launch.sh resources/tvservice-shim.sh resources/fbset-shim.sh /home/osmc/RetroPie/scripts
 
     # install Emulationstation launching Kodi addon
     cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/
