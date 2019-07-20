@@ -38,7 +38,7 @@ function firstTimeSetup() {
           --infobox "\
           \nInstalling RetroPie-Setup...\n\
           " 0 0
-        git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
+        su -u osmc git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git || { echo "FAILED!"; exit 1; }
         clear
         dialog \
           --backtitle "$BACKTITLE" \
@@ -249,7 +249,7 @@ function menuManageThis() {
                 target=$(pwd)
                 cd $target/..
                 rm -r $target
-                git clone https://github.com/hissingshark/retrOSMCmk2.git
+                su -u osmc git clone https://github.com/hissingshark/retrOSMCmk2.git
                 cd $target
                 # restore our submodule now or firstTimeSetup will re-clone it
                 mv /tmp/RetroPie-Setup submodule/
@@ -271,7 +271,7 @@ function menuManageThis() {
                     " 0 0 || continue
 
                 git reset --hard HEAD
-                git pull
+                su -u osmc git pull
                 firstTimeSetup
                 patchRetroPie
                 ;;
