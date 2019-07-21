@@ -173,10 +173,10 @@ function menuManageRPS() {
                 # Re-install (remove -> re-clone ->re-patch) RetroPie-Setup
                 # a simpe re-clone inadvertantly updates RPS unless we check which commit it was at before deleting it...
                 clear
-                rps_version=$(git log -C submodule/RetroPie-Setup --pretty=format:'%H' -n 1)
+                rps_version=$(git -C submodule/RetroPie-Setup log --pretty=format:'%H' -n 1)
                 rm -r submodule/RetroPie-Setup
                 firstTimeSetup
-                git reset -C submodule/RetroPie-Setup --hard $rps_version
+                git -C submodule/RetroPie-Setup reset --hard $rps_version
                 patchRetroPie
                 ;;
             2)
