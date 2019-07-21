@@ -176,7 +176,7 @@ function menuManageRPS() {
                 rps_version=$(git -C submodule/RetroPie-Setup log --pretty=format:'%H' -n 1)
                 rm -r submodule/RetroPie-Setup
                 firstTimeSetup
-                git -C submodule/RetroPie-Setup reset --hard $rps_version
+                su osmc -c -- "git -C submodule/RetroPie-Setup reset --hard $rps_version"
                 patchRetroPie
                 ;;
             2)
@@ -252,7 +252,7 @@ function menuManageThis() {
                 # restore our submodule now or firstTimeSetup will re-clone it
                 mv /tmp/RetroPie-Setup submodule/
                 # revert to last version
-                git reset --hard $installer_version
+                su osmc -c -- "git reset --hard $installer_version"
                 # re-apply components
                 firstTimeSetup
                 ;;
@@ -268,8 +268,8 @@ function menuManageThis() {
                     \nRetroPie itself(your emulators and their configs) will be untouched.\
                     " 0 0 || continue
 
-                git reset --hard HEAD
-                git pull
+                su osmc -c -- 'git reset --hard HEAD'
+                su osmc -c -- 'git pull'
                 firstTimeSetup
                 patchRetroPie
                 ;;
