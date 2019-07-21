@@ -261,7 +261,7 @@ function menuManageThis() {
                 dialog \
                   --backtitle "$BACKTITLE" \
                   --title "Update $LOGO" \
-                  --defaultno --no-label "Abort" --yes-label "Re-install" \
+                  --defaultno --no-label "Abort" --yes-label "Update" \
                   --yesno "\
                     \nThis will update $LOGO (this installer).\
                     \nRetroPie-Setup will be cleaned, but stay at the same version.\
