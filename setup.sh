@@ -374,7 +374,7 @@ fi
                   --msgbox "\
                     \nRetroPie = Your emulators and their configuration files.  You launch it from Kodi with the addon.\
                     \n\nRetroPie-Setup = The tool for installing/updating/removing emulators in RetroPie.\
-                    \n\n$LOGO = This installer, that installs the RetroPie-Setuo tool and makes the whole thing work on the Vero4K\
+                    \n\n$LOGO = This installer, that installs the RetroPie-Setup tool and makes the whole thing work on the Vero4K\
                     \n\nPlease run RetroPie-Setup from the menu to install/update/remove your chosen emulators.\
                     \nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
                     \n\
