@@ -20,7 +20,11 @@ DIALOG_ESC=255
 function firstTimeSetup() {
     # get dependancies
     echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
-    apt-get install -y git dialog || { echo "FAILED!"; exit 1; }
+    depends=(git dialog)
+    if [[ "$platform" == "rpi" ]]; then
+        depends+=(alsa-utils)
+    fi
+    apt-get install -y "${depends[@]}" || { echo "FAILED!"; exit 1; }
     clear
     dialog \
       --backtitle "$BACKTITLE" \
@@ -75,6 +79,16 @@ function firstTimeSetup() {
     # install Emulationstation launching Kodi addon
     cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/
 
+    # perform RPi specific configuration
+    if [[ "$platform" == "rpi" ]]; then
+        # add fix to config.txt for sound
+        if [[ ! $(grep "dtparam=audio=on" "/boot/config.txt") ]]; then
+            sudo su -c 'echo -e "dtparam=audio=on" >> "/boot/config.txt"'
+        fi
+        # set the output volume
+        amixer set PCM 100
+    fi
+
     dialog \
       --backtitle "$BACKTITLE" \
       --title "INSTALLATION COMPLETE" \
@@ -89,6 +103,11 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
+    # ignore patches for RPi series
+    if [[ "$platform" == "rpi" ]]; then
+        return 0
+    fi
+
     # PATCH 1
     # encapsulate the RetroPie update function with our own, so we get to repatch after they update
     # rename the original function away
@@ -238,7 +257,7 @@ function menuManageThis() {
                     " 0 0 || continue
 
                 # Re-install (remove -> re-clone) this installer
-                # a simpe re-clone inadvertantly updates it unless we check which commit it was at before refreshing it...
+                # a simple re-clone inadvertantly updates it unless we check which commit it was at before refreshing it...
                 installer_version=$(git log --pretty=format:'%H' -n 1)
                 # move our submodule out of the way
                 rm -rf /tmp/RetroPie-Setup
@@ -287,6 +306,22 @@ if [ "$EUID" -ne 0 ]; then
     echo -e "\n***\nPlease run as sudo.\nThis is needed for installing any dependencies as we go and for running RetroPie-Setup.\n***"
     exit 1
 fi
+
+# Adapted from the RetroPie platform detection
+case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
+    BCM*)
+        platform="rpi"
+        ;;
+
+    Vero4K|Vero4KPlus)
+        platform="vero4k"
+        ;;
+
+    *)
+        echo -e "*****\nUnknown platform!  $LOGO supports:\nRPi(Zero/1/2/3/4)\nVero (4K/4K+)\n*****\n"
+        exit 1
+        ;;
+esac
 
 # all operations performed relative to this script
 pushd $(dirname "${BASH_SOURCE[0]}") >/dev/null
@@ -346,6 +381,22 @@ fi
                 ;;
             1)
                 # Run RetroPie-Setup
+                # offer to stop a running Kodi instance on RPi to save memory
+                kodiRestart=0
+                if [[ "$(pgrep kodi)" && "$platform" == "rpi" ]]; then
+                    clear
+                    dialog \
+                      --backtitle "$BACKTITLE" \
+                      --title "Kodi is running!" \
+                      --defaultno --no-label "Leave" --yes-label "Stop" \
+                      --yesno "\
+                        \nOn an RPi this may be a problem.\
+                        \nMemory MIGHT run out if you install anything big \"from source\".\
+                        \n\nJust installing \"from binary\" will be okay.\
+                        \n\nWould you like to STOP Kodi or LEAVE it running?\
+                        " 0 0 && sudo systemctl stop mediacenter && kodiRestart=1
+                fi
+
                 clear
                 dialog \
                   --backtitle "$BACKTITLE" \
@@ -356,6 +407,19 @@ fi
 
                 # launch RetroPie-Setup
                 submodule/RetroPie-Setup/retropie_setup.sh
+
+                # restart Kodi if we stopped it
+                if [[ "$kodiRestart" == "1" ]]; then
+                    clear
+                    dialog \
+                      --backtitle "$BACKTITLE" \
+                      --title "Kodi was stopped!" \
+                      --defaultno --no-label "Leave" --yes-label "Restart" \
+                      --yesno "\
+                        \nWe stopped Kodi earlier.\
+                        \n\nWould you like to RESTART Kodi or LEAVE it off?\
+                        " 0 0 && sudo systemctl restart mediacenter
+                fi
                 ;;
             2)
                 # manage RetroPie-Setup
