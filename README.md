@@ -1,9 +1,14 @@
 # retrOSMCmk2
-The RetroPie installer for OSMC on the Vero4k/Vero4K+
+The latest RetroPie installer for OSMC
+
+---
+## Supports
+1. RPi Zero, 1, 2, 3;
+2. Vero4k/Vero4K+.
 
 ---
 ## Function
-1. Install and launch the RetroPie-Setup scripts, to make a RetroPie system on your OSMC box (Vero4K/Vero4K+);
+1. Install and launch the RetroPie-Setup scripts, to make a RetroPie system on a supported OSMC box;
 2. Install a launcher addon, to start EmulationStation from Kodi;
 3. Perform updating of the above utilities.
 
@@ -13,6 +18,7 @@ From the console:
 
 Step 1.
 ``` bash
+sudo apt-get install git
 git clone https://github.com/hissingshark/retrOSMCmk2.git
 cd retrOSMCmk2
 sudo ./setup.sh
