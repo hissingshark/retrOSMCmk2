@@ -12,7 +12,7 @@
 		<description lang="en">Launches into Emulationstation as a frontend to RetroPie</description>
 		<license>GNU General Public License, v2</license>
 		<language></language>
-		<forum></forum>
+		<forum>https://discourse.osmc.tv/t/how-to-retrosmcmk2-a-retropie-installer-on-the-vero4k/82357</forum>
 		<source>https://github.com/hissingshark/script.launch.retropie</source>
 		<website>https://github.com/hissingshark/retrOSMCmk2</website>
 		<email>retrosmcmk2@hissingshark.co.uk</email>
