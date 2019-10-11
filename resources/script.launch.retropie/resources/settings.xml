@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="32001">
+        <setting label="32010" type="lsep"/>
+        <setting label="32011" type="bool" id="cec-enabled" default="false"/>
+        <setting type="sep"/>
+        <setting label="32012" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, PROGRAM)"/>
+        <setting label="32013" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, SETTING)"/>
+        <setting label="32014" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, TEST)"/>
+    </category>
+</settings>
