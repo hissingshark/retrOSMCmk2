@@ -1,6 +1,6 @@
 import os, subprocess, time
 
-# Interupt Kodi sending any "standby" messages to a TV/AVR when we stop mediacenter.service later
+# Interrupt Kodi sending any "standby" messages to a TV/AVR when we stop mediacenter.service later
 cecc = subprocess.Popen("/usr/osmc/bin/cec-client", stdout=subprocess.PIPE, universal_newlines=True)
 time.sleep(1)
 
