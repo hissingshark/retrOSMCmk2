@@ -23,4 +23,3 @@
         <setting label="32042" type="bool" id="es-pre-load" default="false"/>
     </category>
 </settings>
-

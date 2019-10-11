@@ -7,7 +7,6 @@ from shutil import copyfile
 from subprocess import check_output
 
 
-
 #
 # FUNCTION DEFINITIONS
 #
