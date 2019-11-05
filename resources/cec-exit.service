@@ -1,0 +1,10 @@
+[Unit]
+Description=Monitors CEC for a button press to exit RetroPie and return to Kodi
+
+[Service]
+Type=simple
+WorkingDirectory=/home/osmc/RetroPie/scripts
+ExecStart=/home/osmc/RetroPie/scripts/cec-exit.py
+
+[Install]
+WantedBy=multi-user.target
