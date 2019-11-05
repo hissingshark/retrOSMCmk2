@@ -5,10 +5,9 @@ After=systemd-vconsole-setup.service
 [Service]
 Type=simple
 WorkingDirectory=/home/osmc/RetroPie/scripts
-ExecStart=/home/osmc/RetroPie/scripts/launch.sh
+ExecStart=/home/osmc/RetroPie/scripts/es-launch.sh
 StandardInput=tty-force
-StandardOutput=tty-force
 TTYPath=/dev/tty1
 
 [Install]
-WantedBy = multi-user.target
+WantedBy=multi-user.target
