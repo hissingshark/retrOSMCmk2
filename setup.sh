@@ -59,8 +59,10 @@ function firstTimeSetup() {
       --infobox "\
       \nInstalling emulationstation.service...\n\
       " 0 0
-    cp resources/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
+    cp resources/app-switcher.service resources/cec-exit.service resources/emulationstation.service /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
     systemctl daemon-reload || { echo "FAILED!"; exit 1; }
+    systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
+    systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
     clear
     dialog \
       --backtitle "$BACKTITLE" \
@@ -74,7 +76,7 @@ function firstTimeSetup() {
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    cp resources/launch.sh resources/tvservice-shim.sh resources/fbset-shim.sh /home/osmc/RetroPie/scripts
+    cp resources/app-switcher.sh resources/cec-exit.py resources/es-launch.sh resources/fbset-shim.sh resources/tvservice-shim.sh /home/osmc/RetroPie/scripts
 
     # install Emulationstation launching Kodi addon
     cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/
