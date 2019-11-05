@@ -1,0 +1,10 @@
+[Unit]
+Description=retrOSMCmk2 app-switcher
+
+[Service]
+Type=simple
+WorkingDirectory=/home/osmc/RetroPie/scripts
+ExecStart=/home/osmc/RetroPie/scripts/app-switcher.sh
+
+[Install]
+WantedBy=multi-user.target

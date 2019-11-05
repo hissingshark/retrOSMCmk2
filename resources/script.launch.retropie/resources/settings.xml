@@ -1,11 +1,26 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="32001">
         <setting label="32010" type="lsep"/>
-        <setting label="32011" type="bool" id="cec-enabled" default="false"/>
-        <setting type="sep"/>
-        <setting label="32012" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, PROGRAM)"/>
-        <setting label="32013" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, SETTING)"/>
-        <setting label="32014" type="action" action="RunScript(special://userdata/../addons/script.launch.retropie/cec.py, TEST)"/>
+        <setting label="32011" type="bool" subsetting="true" id="cec-exit" default="false"/>
+        <setting label="32012" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, PROGRAM, CEC)"/>
+        <setting label="32013" subsetting="true" type="action" enable="eq(-2,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, SETTING, CEC)"/>
+        <setting label="32014" subsetting="true" type="action" enable="eq(-3,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, TEST, CEC)"/>
+    </category>
+    <category label="32002">
+        <setting label="32020" type="lsep"/>
+        <setting label="32021" type="bool" id="evtest-exit" default="false"/>
+        <setting label="32022" subsetting="true" type="action" enable="eq(-1,true)" action="/home/osmc/.kodi/addons/script.launch.retropie/addon.py, PROGRAM, EVTEST)"/>
+        <setting label="32023" subsetting="true" type="action" enable="eq(-2,true)" action="/home/osmc/.kodi/addons/script.launch.retropie/addon.py, SETTING, EVTEST)"/>
+        <setting label="32024" subsetting="true" type="action" enable="eq(-3,true)" action="/home/osmc/.kodi/addons/script.launch.retropie/addon.py, TEST, EVTEST)"/>
+    </category>
+    <category label="32003">
+        <setting label="32030" type="lsep"/>
+        <setting label="32031" type="bool" id="kodi-signals" default="false"/>
+    </category>
+    <category label="32004">
+        <setting label="32040" type="lsep"/>
+        <setting label="32041" type="bool" id="fast-switching" default="false"/>
+        <setting label="32042" type="bool" id="es-pre-load" default="false"/>
     </category>
 </settings>
+

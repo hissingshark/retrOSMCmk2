@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#32001"
-msgid "CEC Exit Key"
+msgid "Remote Exit Key"
 msgstr ""
 
 msgctxt "#32010"
@@ -29,7 +29,7 @@ msgid "Enable exit key"
 msgstr ""
 
 msgctxt "#32012"
-msgid "Program exit key"
+msgid "Program keycode"
 msgstr ""
 
 msgctxt "#32013"
@@ -38,4 +38,56 @@ msgstr ""
 
 msgctxt "#32014"
 msgid "Test exit key"
+msgstr ""
+
+msgctxt "#32002"
+msgid "Gamepad Exit Button"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Configure a gamepad button to exit RetroPie"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Enable exit button"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Program button code"
+msgstr ""
+
+msgctxt "#32023"
+msgid "View current button code"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Test exit button"
+msgstr ""
+
+msgctxt "#32003"
+msgid "CEC Standby Signals"
+msgstr ""
+
+msgctxt "#32030"
+msgid "Kodi may be configured to put a TV/AVR into standby at shutdown\n - unless blocked these signals will happen when launching RetroPie"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Block CEC signals"
+msgstr ""
+
+msgctxt "#32004"
+msgid "Fast App Switching"
+msgstr ""
+
+msgctxt "#32040"
+msgid "Instantly switch between Kodi and Emulationstation.\nA remote and/or gamepad exit button should be configured"
+msgstr ""
+
+msgctxt "#32041"
+msgid "Enable fast switching"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Pre-load Emulationstation at boot"
 msgstr ""
