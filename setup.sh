@@ -134,10 +134,6 @@ function patchRetroPie() {
     sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
     sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-    # PATCH 4
-    # fix for upstream bad package
-    sed -i '/depends+=(libgles2-mesa-dev)/d' submodule/RetroPie-Setup/scriptmodules/emulators/retroarch.sh
-
     return 0
 }
 
