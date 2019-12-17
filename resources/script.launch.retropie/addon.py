@@ -112,7 +112,7 @@ if len(sys.argv) > 1:
 else:
   # load addon settings
   cec_exit = "false"
-  evtest_exit = "false"
+  evdev_exit = "false"
   kodi_signals = "false"
   fast_switching = "false"
   es_pre_load = "false"
@@ -123,8 +123,8 @@ else:
     for setting in settings:
       if setting.get("id") == "cec-exit":
         cec_exit = setting.text
-      elif setting.get("id") == "evtest-exit":
-        evtest_exit = setting.text
+      elif setting.get("id") == "evdev-exit":
+        evdev_exit = setting.text
       elif setting.get("id") == "kodi-signals":
         kodi_signals = setting.text
       elif setting.get("id") == "fast-switching":
@@ -140,11 +140,11 @@ else:
 
   # start the CEC exit button watchdog?
   if cec_exit == "true":
-    os.system('systemctl start cec-exit.service')
+    os.system('systemctl start cec-exit')
 
-  # start the evtest exit button watchdog?
-  if evtest_exit == "true":
-    os.system('systemctl start evtest-exit.service')
+  # start the evdev exit button watchdog?
+  if evdev_exit == "true":
+    os.system('systemctl start evdev-exit')
 
   # launch Emulationstation +/- fast switching which is needed to block CEC shutdown signals too
   if (kodi_signals == "true" or fast_switching == "true"):
@@ -220,10 +220,9 @@ elif INPUTTYPE == "EVDEV":
     cec_client("START")
     dialog.notification("CEC-client", "listening...", xbmcgui.NOTIFICATION_INFO, 1000)
 
-    # collect 2 presses of the same key and the description that follows if it exists
-    keys = [btncode]
-    while not keys.count(keys[-1]) == 2:
-      keys.append(cec_client("CODE"))
+  # ensure FIFO is in place for evdev-helper comms
+  if not path.exists(FIFO_PATH):
+    os.mkfifo(FIFO_PATH)
 
     btncode = keys[-1]
     btndesc = cec_client("DESC")

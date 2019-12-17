@@ -60,7 +60,7 @@ while true; do
       sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
 
       systemctl stop cec-exit
-#      systemctl stop evtest-exit
+      systemctl stop evdev-exit
 
       if [[ -z "$MC_GPID" ]]; then
         systemctl start mediacenter
