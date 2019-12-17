@@ -3,7 +3,8 @@
 import os, subprocess, sys
 import xml.etree.ElementTree as ET
 from subprocess import check_output
-
+import logging
+logging.basicConfig(filename='/home/osmc/cec.log',level=logging.DEBUG)
 
 #
 # FUNCTION DEFINITIONS
@@ -22,6 +23,7 @@ def cec_client(mode):
     while True:
       line = next(cecc_iter)
       if all(["TRAFFIC" in line, ">>" in line]): # looking for key code
+        logging.debug(line)
         # extract inbound CEC frame
         keycode = line.split(">>")[-1].strip()
         # ignore key release code that spams the output

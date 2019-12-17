@@ -87,22 +87,20 @@ elif [[ "$MODE" == "SCANSINGLE" ]]; then
 elif [[ "$MODE" == "CATCHCOMBO" ]]; then
   # report when the hotkey and exit button combo has been pressed on a specific controller
   SUBMODE=$2
+  GAMEPAD=$3
+  HOTKEY=$4
+  EXITKEY=$5
 
   if [[ "$SUBMODE" == "TEST" ]]; then
+    # in Kodi we want to prevent the controller driving the menus during programming.
     grab="--grab"
-    GAMEPAD=$3
-    HOTKEY=$4
-    EXITKEY=$5
     # start the watchdog clock in case something goes wrong or just no buttons are pressed
     $SELF "KILL" 10 "TIMEOUT" &
-  else
-    # a FIFO is needed to get tehe param
-    if [[ ! -p $FIFO ]]; then
-      sudo -u osmc mkfifo $FIFO
-    fi
-    # in Kodi we want to prevent the controller driving the menus during programming.
+  elif [[ "$SUBMODE" == "LIVE" ]]; then
     # in Retropie controls must pass to the emulator uninterrupted
     grab=""
+  else
+    echo "Bad SUBMODE: $SUBMODE" >> /home/osmc/evdev-helper.log
   fi
 
   toggle=0

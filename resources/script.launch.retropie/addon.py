@@ -95,7 +95,7 @@ def readFIFO():
 
 # init constant paths
 CLIENT="/usr/osmc/bin/cec-client"
-EVHELPER="/home/osmc/RetroPie/scripts/evdev-exit.sh"
+EVHELPER="/home/osmc/RetroPie/scripts/evdev-helper.sh"
 DATA="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/data.xml"
 HIDDEN="/home/osmc/.kodi/userdata/keymaps/remote.xml.hidden"
 HOBBLE="/home/osmc/.kodi/addons/script.launch.retropie/resources/data/hobble.xml"
