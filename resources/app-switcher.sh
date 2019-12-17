@@ -19,10 +19,13 @@ while true; do
     ES_GPID=$(ps xao pgid,comm | grep -m 1 "emulationstatio" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
     MC_GPID=$(ps xao pgid,comm | grep -m 1 "kodi.bin" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
 
+    # socket to pulseaudioserver if running
+    PA_SERVER=$(ls /home/osmc/.config/pulse/*-runtime/native)
+
     if [[ "$DESTINATION" == "es" ]]; then
       sudo chvt 1
-      sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'
-      sudo sh -c 'fbset -g 1920 1080 1920 2160 32'
+#      sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'
+#      sudo sh -c 'fbset -g 1920 1080 1920 2160 32'
 
       if [[ "$MODE" == "slow" ]]; then
         systemctl stop mediacenter
@@ -40,6 +43,8 @@ while true; do
       if [[ -z "$ES_GPID" ]]; then
         systemctl start emulationstation
       else
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
+        sleep 0.5
         sudo kill -CONT "-$ES_GPID"
       fi
 
@@ -48,6 +53,7 @@ while true; do
         systemctl stop emulationstation
       elif [[ "$MODE" == "fast" ]]; then
         sudo kill -STOP "-$ES_GPID"
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
       else
         continue
       fi

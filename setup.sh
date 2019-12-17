@@ -20,7 +20,7 @@ DIALOG_ESC=255
 function firstTimeSetup() {
     # get dependancies
     echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
-    depends=(git dialog)
+    depends=(git dialog pulseaudio)
     if [[ "$platform" == "rpi" ]]; then
         depends+=(alsa-utils)
     fi
