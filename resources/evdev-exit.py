@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import os, subprocess, sys
+from os import path
 import xml.etree.ElementTree as ET
 from subprocess import check_output
 import logging
-logging.basicConfig(filename='/home/osmc/cec.log',level=logging.DEBUG)
+logging.basicConfig(filename='/home/osmc/evdev.log',level=logging.DEBUG)
 
 #
 # FUNCTION DEFINITIONS
@@ -27,14 +28,11 @@ def monitorFIFO():
 # EXECUTION STARTS HERE
 #
 
-
 # init constant paths
-EVHELPER="/home/osmc/RetroPie/scripts/evdev-exit.sh"
+EVHELPER="/home/osmc/RetroPie/scripts/evdev-helper.sh"
 DATA="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/data.xml"
 SETTINGS="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml"
 FIFO_PATH="/tmp/evdev-exit.fifo"
-
-# init process variables
 
 # load addon settings
 try:

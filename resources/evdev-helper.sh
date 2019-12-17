@@ -113,13 +113,7 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
       if [[ "${line: -1}" == "1" ]]; then
         # exit button pressed, so if hotkey was already held down it is time to exit
         if [[ "$toggle" == "1" ]]; then
-          if [[ "$SUBMODE" == "TEST" ]]; then
-            killThreads "EXIT"
-          elif [[ "$SUBMODE" == "FAST" ]]; then
-            echo "mc fast" > /tmp/app-switcher.fifo
-          elif [[ "$SUBMODE" == "SLOW" ]]; then
-            echo "mc slow" > /tmp/app-switcher.fifo
-          fi
+          killThreads "EXIT"
         fi
       fi
     fi
