@@ -62,6 +62,8 @@ while true; do
       systemctl stop cec-exit
       systemctl stop evdev-exit
 
+      sleep 1 # might avoid screen swap glitch when Kodi returns
+      
       if [[ -z "$MC_GPID" ]]; then
         systemctl start mediacenter
       else
