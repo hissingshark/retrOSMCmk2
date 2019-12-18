@@ -103,18 +103,39 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
     echo "Bad SUBMODE: $SUBMODE" >> /home/osmc/evdev-helper.log
   fi
 
-  toggle=0
+  # The method is to detect the 2 buttons being in a pressed state HOT + EXIT = SET, in whatever order (same as Retroarch actually)
+  # BUT here we also wait until they are both released again - this is important - halting emulators during a pressed state means they 
+  # don't witness the release state.  They will think they are still pressed when they resume again.  So a user pressing the start
+  # button to unpause their game will actually be pressing the hotkey + start, unintentionally quitting back to ES...
+  HOT=0
+  EXIT=0
+  SET=0
+
   evtest $grab "/dev/input/by-id/$GAMEPAD" | while read line; do
     btncode=$(echo $line | grep EV_KEY | cut -d ")" -f2 | cut -d "(" -f2 )
+
     if [[ "$btncode" == "$HOTKEY" ]]; then
       # get pressed/released status of hotkey
-      toggle=${line: -1}
+      HOT=${line: -1}
     elif [[ "$btncode" == "$EXITKEY" ]]; then
-      if [[ "${line: -1}" == "1" ]]; then
-        # exit button pressed, so if hotkey was already held down it is time to exit
-        if [[ "$toggle" == "1" ]]; then
-          killThreads "EXIT"
-        fi
+      # get pressed/released status of exitkey
+      EXIT=${line: -1}
+    else
+      # button does not concern us
+      continue
+    fi
+
+    if [[ "$SET" == "0" ]]; then
+      # yet to have both buttons pressed simultaneuously
+      if [[ $((HOT + EXIT)) == "2" ]]; then
+        # both are pressed now
+        SET=1
+      fi
+    elif [[ "$SET" == "1" ]]; then
+      # previously had both buttons pressed simultaneuously
+      if [[ $((HOT + EXIT)) == "0" ]]; then
+        # both are released again
+        killThreads "EXIT"
       fi
     fi
   done
