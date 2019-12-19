@@ -32,6 +32,7 @@ function firstTimeSetup() {
       --infobox "\
       \nSUCCESS!\n\
       " 0 0
+    sleep 2
 
     # get RetroPie-Setup
     # if present we only want update the installer, so leave it untouched
@@ -50,25 +51,15 @@ function firstTimeSetup() {
           --infobox "\
           \nSUCCESS!\n\
           " 0 0
+        sleep 2
     fi
 
-    # install EmulationStation launch service
+    # start installing scripts and services
     dialog \
       --backtitle "$BACKTITLE" \
       --title "First Time Setup" \
       --infobox "\
-      \nInstalling emulationstation.service...\n\
-      " 0 0
-    cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
-    systemctl daemon-reload || { echo "FAILED!"; exit 1; }
-    systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
-    systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
-    clear
-    dialog \
-      --backtitle "$BACKTITLE" \
-      --title "First Time Setup" \
-      --infobox "\
-      \nSUCCESS!\n\
+      \nInstalling $LOGO scripts and services...\n\
       " 0 0
 
     # install scripts into RetroPie directory
@@ -76,10 +67,19 @@ function firstTimeSetup() {
     if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
         mkdir -p /home/osmc/RetroPie/scripts
     fi
-    cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts
+    cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
 
-    # install Emulationstation launching Kodi addon
-    cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/
+    # install the retrOSMC Kodi addon
+    cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/ || { echo "FAILED!"; exit 1; }
+    if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
+        mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
+    fi
+
+    # install and enable services
+    cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
+    systemctl daemon-reload || { echo "FAILED!"; exit 1; }
+    systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
+    systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
 
     # perform RPi specific configuration
     if [[ "$platform" == "rpi" ]]; then
@@ -91,13 +91,23 @@ function firstTimeSetup() {
         amixer set PCM 100
     fi
 
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "First Time Setup" \
+      --infobox "\
+      \nSUCCESS!\n\
+      " 0 0
+    sleep 2
+
+    clear
     dialog \
       --backtitle "$BACKTITLE" \
       --title "INSTALLATION COMPLETE" \
       --msgbox "\
       \n$LOGO has just installed RetroPie and its Kodi addon for you.\
       \n\nPlease run RetroPie-Setup from the next menu to start installing your chosen emulators.\
-      \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons!\
+      \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons! (a reboot may be required for it to be listed there)\
       " 0 0
 
     return 0
