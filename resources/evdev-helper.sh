@@ -16,7 +16,6 @@ FIFO="/tmp/evdev-exit.fifo"
 
 # we look for gamepads here
 DEV_PATH="/dev/input/by-id/"
-#DEV_PATH="/dev/input/"
 
 
 #############
@@ -142,5 +141,5 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
 
 
 else
-  echo "Bad MODE: $MODE" >> /home/osmc/evdev.log
+  echo "Bad MODE: $MODE" >> /home/osmc/evdev-helper.log
 fi
