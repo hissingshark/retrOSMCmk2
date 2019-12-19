@@ -75,6 +75,7 @@ function firstTimeSetup() {
     cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/ || { echo "FAILED!"; exit 1; }
     if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
         mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
+        chown osmc:osmc /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
     fi
 
     # install and enable services
