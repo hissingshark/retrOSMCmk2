@@ -43,6 +43,7 @@ function firstTimeSetup() {
           --infobox "\
           \nInstalling RetroPie-Setup...\n\
           " 0 0
+        sleep 2
         su osmc -c -- 'git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git' || { echo "FAILED!"; exit 1; }
         clear
         dialog \
@@ -61,6 +62,7 @@ function firstTimeSetup() {
       --infobox "\
       \nInstalling $LOGO scripts and services...\n\
       " 0 0
+    sleep 2
 
     # install scripts into RetroPie directory
     # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
