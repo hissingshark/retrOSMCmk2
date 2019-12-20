@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# switches between Kodi and RetroPie, as instructed over a FIFO
+# slow mode stops and starts services in turn
+# fast mode halt and resumes processes via "kill STOP/CONT"
 
 FIFO=/tmp/app-switcher.fifo
 
@@ -26,18 +29,12 @@ while true; do
         sudo sh -c 'fbset -g 1920 1080 1920 2160 32'
       fi
 
-# Still needed? Wasn't part of the manual tests...
-      sudo chvt 1
-
       if [[ "$MODE" == "slow" ]]; then
         systemctl stop mediacenter
       elif [[ "$MODE" == "fast" ]]; then
         sudo kill -STOP "-$MC_GPID"
-      elif [[ "$MODE" == "preload" ]]; then
-        systemctl start emulationstation
-        sleep 5
-        ES_GPID=$(ps xao pgid,comm | grep -m 1 "emulationstatio" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
-        sudo kill -STOP "-$ES_GPID"
+        # console normally unbound when Kodi exits - without it there's no runcommand.sh console menu
+        echo 1 >/sys/class/vtconsole/vtcon1/bind
       else
         continue
       fi
@@ -45,6 +42,9 @@ while true; do
       if [[ -z "$ES_GPID" ]]; then
         systemctl start emulationstation
       else
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
+        # minimise any audio crackle on resuming PA
+        sleep 0.5
         sudo kill -CONT "-$ES_GPID"
       fi
 
@@ -53,17 +53,19 @@ while true; do
         systemctl stop emulationstation
       elif [[ "$MODE" == "fast" ]]; then
         sudo kill -STOP "-$ES_GPID"
+        # restore the console binding for Kodi
+        echo 0 >/sys/class/vtconsole/vtcon1/bind
       else
         continue
       fi
 
+      # disconnects emulators from the audio device to avoid blocking Kodi from it
       sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
 
+      # exit methods no longer required
       systemctl stop cec-exit
       systemctl stop evdev-exit
 
-      sleep 1 # might avoid screen swap glitch when Kodi returns
-      
       if [[ -z "$MC_GPID" ]]; then
         systemctl start mediacenter
       else
