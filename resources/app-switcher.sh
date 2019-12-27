@@ -43,6 +43,8 @@ while true; do
       fi
 
       if [[ -z "$ES_GPID" ]]; then
+        # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
+        sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
         systemctl start emulationstation
       else
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
