@@ -15,11 +15,13 @@
     </category>
     <category label="32004">
         <setting label="32040" type="lsep"/>
-        <setting label="32041" type="bool" id="fast-switching" default="false"/>
+        <setting label="32041" visible="!System.Platform.Linux.RaspberryPi" type="bool" id="fast-switching" default="false"/>
+        <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
     </category>
     <category label="32003">
         <setting label="32030" type="lsep"/>
-        <setting label="32031" type="bool" id="kodi-signals" default="false"/>
+        <setting label="32031" visible="!System.Platform.Linux.RaspberryPi" type="bool" id="kodi-signals" default="false"/>
+        <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
     </category>
     <category label="32005">
         <setting label="32050" type="lsep"/>
