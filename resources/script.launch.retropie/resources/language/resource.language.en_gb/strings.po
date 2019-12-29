@@ -64,6 +64,22 @@ msgctxt "#32024"
 msgid "Test exit button"
 msgstr ""
 
+msgctxt "#32004"
+msgid "Fast App Switching"
+msgstr ""
+
+msgctxt "#32040"
+msgid "Instantly switch between Kodi and Emulationstation!\nA remote and/or gamepad exit button should be configured"
+msgstr ""
+
+msgctxt "#32041"
+msgid "Enable fast switching"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Unfortunately this option is presently unavailable on the RPi"
+msgstr ""
+
 msgctxt "#32003"
 msgid "CEC Standby Signals"
 msgstr ""
