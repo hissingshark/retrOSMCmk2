@@ -4,8 +4,7 @@ import os, subprocess, sys
 from os import path
 import xml.etree.ElementTree as ET
 from subprocess import check_output
-import logging
-logging.basicConfig(filename='/home/osmc/evdev.log',level=logging.DEBUG)
+
 
 #
 # FUNCTION DEFINITIONS
