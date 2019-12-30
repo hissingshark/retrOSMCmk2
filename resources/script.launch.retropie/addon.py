@@ -225,8 +225,33 @@ elif INPUTTYPE == "EVDEV":
   if not path.exists(FIFO_PATH):
     os.mkfifo(FIFO_PATH)
 
-    btncode = keys[-1]
-    btndesc = cec_client("DESC")
+  if MODE == "PROGRAM":
+    dialog.textviewer("Program Exit Buttons", "These will work like RetroPie.\n\nYou configure a hotkey enable button and an exit button.  For example to exit back to EMulationstation most people are configured to hold down \"select\" and press \"start\".\n\nThe enable button could be the same as RetroPie, but the switch button MUST NOT ALREADY BE ASSIGNED to anything else in RetroPie e.g. exit, reset, save/load gamestate.\n\nProgramming instructions\n1. Press OK\n2. When requested press the hotkey enable button on the gamepad.\n3. Then when requested press the gamepad button you will use for the switching function.")
+
+    # collect controller name and hotkey enable button
+    subprocess.Popen([EVHELPER, "SCANMULTI"])
+    dialog.notification("Program Exit Buttons", "Press hotkey enable button...", xbmcgui.NOTIFICATION_INFO, 3000)
+    msg = readFIFO()
+    # validate output = gamepad-id:button-id
+    gamepad = msg.split(':', 1)[0]
+    hotbtncode = msg.split(':', 1)[1]
+    dialog.notification("Program Exit Buttons", "Button captured!", xbmcgui.NOTIFICATION_INFO, 2000)
+    time.sleep(3)
+
+    # collect exit button for the same controller
+    subprocess.Popen([EVHELPER, "SCANSINGLE", gamepad, "PARENT"])
+    dialog.notification("Program Exit Buttons", "Press exit button...", xbmcgui.NOTIFICATION_INFO, 3000)
+    msg = readFIFO()
+    # validate output - gamepad id, button id
+    if not msg.split(':', 1)[0] == gamepad:
+      dialog.ok("Program Exit Buttons", "\"Exit Button\" must be on the same controller as the \"Hotkey Enable Button\"!")
+      exit()
+  
+    exitbtncode = msg.split(':', 1)[1]
+    # exit button cannot be the same as the hotkey enable button...
+    if exitbtncode == hotbtncode:
+      dialog.ok("Program Exit Buttons", "\"Exit Button\" cannot be the same as the \"Hotkey Enable Button\"!")
+      exit()
 
     # write out addon data.xml
     settings.find("btncode").text = btncode
