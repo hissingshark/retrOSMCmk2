@@ -271,8 +271,12 @@ elif INPUTTYPE == "EVDEV":
     if not msg.split(':', 1)[0] == gamepad:
       dialog.ok("Program Exit Buttons", "\"Exit Button\" must be on the same controller as the \"Hotkey Enable Button\"!")
       exit()
-# TODO exit button cannot be the same as the hotkey enable button...
+  
     exitbtncode = msg.split(':', 1)[1]
+    # exit button cannot be the same as the hotkey enable button...
+    if exitbtncode == hotbtncode:
+      dialog.ok("Program Exit Buttons", "\"Exit Button\" cannot be the same as the \"Hotkey Enable Button\"!")
+      exit()
 
     # write out addon data.xml
     settings.find("gamepad").text = gamepad
