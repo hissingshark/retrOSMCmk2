@@ -153,6 +153,10 @@ function patchRetroPie() {
   # fix for upstream bad package
   sed -i '/depends+=(libgles2-mesa-dev)/d' submodule/RetroPie-Setup/scriptmodules/emulators/retroarch.sh
 
+  # PATCH 5
+  # fix 4k/4K+ platform identification under new and old kernels
+  sed -i 's/Vero4K|Vero4KPlus/*Vero*4K*/' submodule/RetroPie-Setup/scriptmodules/system.sh
+
   return 0
 }
 
@@ -331,7 +335,7 @@ case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
   BCM*)
     platform="rpi"
     ;;
-  Vero4K|Vero4KPlus)
+  *Vero*4K*)
     platform="vero4k"
     ;;
   *)
