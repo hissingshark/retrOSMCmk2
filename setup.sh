@@ -120,42 +120,8 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
-<<<<<<< HEAD
-    # ignore patches for RPi series
-    if [[ "$platform" == "rpi" ]]; then
-        return 0
-    fi
-
-    # PATCH 1
-    # encapsulate the RetroPie update function with our own, so we get to repatch after they update
-    # rename the original function away
-    sed -i '/function updatescript_setup()/s/updatescript_setup/updatescript_setup_original/' submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
-    # append our wrapper function
-    cat resources/updatescript_setup.sh >> submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
-
-    # PATCH 2
-    # use tvservice-shim and fbset-shim instead of the real thing
-    if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
-        # installed version patched in place
-        # needs a fresh copy to work on, before we patch the original resource file
-        cp submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh /opt/retropie/supplementary/runcommand/runcommand.sh
-        sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' /opt/retropie/supplementary/runcommand/runcommand.sh
-    fi
-    # patch the resource file regardless as there may be a re-install from there later
-    sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
-
-    # PATCH 3
-    # make binaries available for Vero4K
-    sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
-    sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
-    sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
-    sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-    sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
-
-=======
   # ignore patches for RPi series
   if [[ "$platform" == "rpi" ]]; then
->>>>>>> Fixed indentation
     return 0
   fi
 

@@ -23,6 +23,9 @@ while true; do
     ES_GPID=$(ps xao pgid,comm | grep -m 1 "emulationstatio" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
     MC_GPID=$(ps xao pgid,comm | grep -m 1 "kodi.bin" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
 
+    # socket to pulseaudioserver if running
+    PA_SERVER=$(ls /home/osmc/.config/pulse/*-runtime/native)
+
     if [[ "$DESTINATION" == "es" ]]; then
       if [[ "$4KFIX" == "true" ]]; then
         sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'

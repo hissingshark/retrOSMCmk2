@@ -85,25 +85,22 @@ msgid "CEC Standby Signals"
 msgstr ""
 
 msgctxt "#32030"
-msgid "Kodi may be configured to put a TV/AVR into standby at shutdown\n - unless blocked these signals will happen when launching RetroPie"
+msgid "Kodi may be configured to put a TV/AVR into standby at shutdown\n - unless blocked these signals will happen when launching RetroPie!"
 msgstr ""
 
 msgctxt "#32031"
 msgid "Block CEC signals"
 msgstr ""
 
-msgctxt "#32004"
-msgid "Fast App Switching"
+msgctxt "#32005"
+msgid "4K TV Fix"
 msgstr ""
 
-msgctxt "#32040"
-msgid "Instantly switch between Kodi and Emulationstation.\nA remote and/or gamepad exit button should be configured"
+msgctxt "#32050"
+msgid "Some 4K TVs give a scrambled or flickering picture at launch\n - only use this if you have the problem or you'll induce the same!"
 msgstr ""
 
-msgctxt "#32041"
-msgid "Enable fast switching"
+msgctxt "#32051"
+msgid "Switch resolution at launch"
 msgstr ""
 
-msgctxt "#32042"
-msgid "Pre-load Emulationstation at boot"
-msgstr ""

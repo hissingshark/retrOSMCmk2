@@ -23,10 +23,9 @@
         <setting label="32031" visible="!System.Platform.Linux.RaspberryPi" type="bool" id="kodi-signals" default="false"/>
         <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
     </category>
-    <category label="32004">
-        <setting label="32040" type="lsep"/>
-        <setting label="32041" type="bool" id="fast-switching" default="false"/>
-        <setting label="32042" type="bool" id="es-pre-load" default="false"/>
+    <category label="32005">
+        <setting label="32050" type="lsep"/>
+        <setting label="32051" type="bool" id="4k-fix" default="false"/>
     </category>
 </settings>
 
