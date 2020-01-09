@@ -20,9 +20,11 @@ DIALOG_ESC=255
 function firstTimeSetup() {
   # get dependancies
   echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
-  depends=(git dialog pulseaudio evtest)
+  depends=(git dialog)
   if [[ "$platform" == "rpi" ]]; then
     depends+=(alsa-utils)
+  else
+    depends+=(pulseaudio evtest)
   fi
   apt-get install -y "${depends[@]}" || { echo "FAILED!"; exit 1; }
   clear
