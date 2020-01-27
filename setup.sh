@@ -77,7 +77,7 @@ function firstTimeSetup() {
   zip -r /home/osmc/script.launch.retropie.zip resources/script.launch.retropie || { echo "FAILED!"; exit 1; }
 
   # install and enable services
-  cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
+  cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
   systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
   systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
