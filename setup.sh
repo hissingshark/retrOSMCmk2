@@ -20,7 +20,7 @@ DIALOG_ESC=255
 function firstTimeSetup() {
   # get dependancies
   echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
-  depends=(git dialog evtest)
+  depends=(dialog evtest git zip)
   if [[ "$platform" == "rpi" ]]; then
     depends+=(alsa-utils)
   else
@@ -73,12 +73,8 @@ function firstTimeSetup() {
   fi
   cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
 
-  # install the retrOSMC Kodi addon
-  cp -r resources/script.launch.retropie /home/osmc/.kodi/addons/ || { echo "FAILED!"; exit 1; }
-  if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
-    mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
-    chown osmc:osmc /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
-  fi
+  # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
+  zip -r /home/osmc/script.launch.retropie.zip resources/script.launch.retropie || { echo "FAILED!"; exit 1; }
 
   # install and enable services
   cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
