@@ -12,7 +12,7 @@
 # FUNCTIONS #
 #############
 
-# takes an element number and a reference to an array - removes that element
+# takes an index and a reference to an array - removes that element
 function cutArray() {
   local tocut=$1
   local -n array=$2
@@ -66,10 +66,7 @@ while true; do
       # send : delimited list of...
       DUMP=$(( ${#PGIDS[@]} - 1 )) # how many slots
       for ((num=1; num<${#PGIDS[@]}; num++)); do # followed by the contents
-# TODO we only get the first word of ROM titles containing spaces
-        DUMP+=":${PLATFORMS[$num]}:"
-# trying with roms in seperate quotes in case its only sending the first ekement of the array
-        DUMP+="${ROMS[$num]}"
+        DUMP+=":${PLATFORMS[$num]}:${ROMS[$num]}"
       done
       echo "$DUMP" > "$FIFO"
 
@@ -79,8 +76,9 @@ while true; do
 
     elif [[ "$MODE" == "update" ]]; then
       PLATFORMS[$ACTIVE_SESSION]="${opts[1]}"
-#      ROMS[$ACTIVE_SESSION]="${opts[2]}"
-      shift 1
+      # multi word ROM title forms all subsequent array elements so remove first 2 then store remainig array as string
+      cutArray 0 opts
+      cutArray 0 opts
       ROMS[$ACTIVE_SESSION]="${opts[@]}"
 
     elif [[ "$MODE" == "delete" ]]; then
