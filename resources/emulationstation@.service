@@ -7,7 +7,8 @@ Type=simple
 WorkingDirectory=/home/osmc/RetroPie/scripts
 ExecStart=/home/osmc/RetroPie/scripts/es-launch.sh
 StandardInput=tty-force
-TTYPath=/dev/tty1
+StandardOutput=tty
+TTYPath=/dev/tty%i
 
 [Install]
 WantedBy=multi-user.target
