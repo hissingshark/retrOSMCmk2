@@ -66,12 +66,16 @@ function firstTimeSetup() {
     " 0 0
   sleep 2
 
-  # install scripts into RetroPie directory
-  # create it first if it doesn't exist - RetroPie-Setup wont remove it at install/update
+  # install scripts into RetroPie directories
+  # create them first if they don't exist - RetroPie-Setup wont remove them at install/update
   if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
     mkdir -p /home/osmc/RetroPie/scripts
   fi
   cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  if [[ ! -d /opt/retropie/configs/all/ ]]; then
+    mkdir -p /opt/retropie/configs/all/
+  fi
+  cp resources/{runcommand-onend.sh.runcommand-onstart.sh} /opt/retropie/configs/all/ || { echo "FAILED!"; exit 1; }
 
   # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
   zip -r /home/osmc/script.launch.retropie.zip resources/script.launch.retropie || { echo "FAILED!"; exit 1; }
