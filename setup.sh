@@ -132,6 +132,8 @@ function patchRetroPie() {
     sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
     sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
     sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+    sed -i '/local ver="$(get_ver_sdl2)+/s/+./+1/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+    sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.8"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
     sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
     return 0
