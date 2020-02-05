@@ -138,16 +138,18 @@ function patchRetroPie() {
     # installed version patched in place
     # needs a fresh copy to work on, before we patch the original resource file
     cp submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh /opt/retropie/supplementary/runcommand/runcommand.sh
+    sed -i '/^#!/a echo "tty" > /tmp/app-switcher.fifo\nsleep 0.1\nRC_TTY=$(cat /tmp/app-switcher.fifo)\nsudo chvt $RC_TTY' /opt/retropie/supplementary/runcommand/runcommand.sh
     sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' /opt/retropie/supplementary/runcommand/runcommand.sh
   fi
   # patch the resource file regardless as there may be a re-install from there later
+  sed -i '/^#!/a echo "tty" > /tmp/app-switcher.fifo\nsleep 0.1\nRC_TTY=$(cat /tmp/app-switcher.fifo)\nsudo chvt $RC_TTY' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
   sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
 
   # PATCH 3
   # make binaries available for Vero4K
   sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  sed -i '/__binary_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
+  sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/local ver="$(get_ver_sdl2)+/s/+./+1/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.8"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
