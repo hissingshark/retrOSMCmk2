@@ -78,8 +78,10 @@ function firstTimeSetup() {
   cp resources/{runcommand-onend.sh,runcommand-onstart.sh} /opt/retropie/configs/all/ || { echo "FAILED!"; exit 1; }
 
   # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
-  zip -r /home/osmc/script.launch.retropie.zip resources/script.launch.retropie || { echo "FAILED!"; exit 1; }
-
+  cd resources
+  zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+  cd ..
+  
   # install and enable services
   cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
