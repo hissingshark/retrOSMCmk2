@@ -75,7 +75,7 @@ function firstTimeSetup() {
   if [[ ! -d /opt/retropie/configs/all/ ]]; then
     mkdir -p /opt/retropie/configs/all/
   fi
-  cp resources/{runcommand-onend.sh.runcommand-onstart.sh} /opt/retropie/configs/all/ || { echo "FAILED!"; exit 1; }
+  cp resources/{runcommand-onend.sh,runcommand-onstart.sh} /opt/retropie/configs/all/ || { echo "FAILED!"; exit 1; }
 
   # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
   zip -r /home/osmc/script.launch.retropie.zip resources/script.launch.retropie || { echo "FAILED!"; exit 1; }
