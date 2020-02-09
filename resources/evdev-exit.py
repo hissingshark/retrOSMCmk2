@@ -66,6 +66,6 @@ if msg != "EXIT":
   exit()
 else:
   if fast_switching == "false":
-    os.system('echo "mc slow" >/tmp/app-switcher.fifo')
+    os.system('echo "switch mc slow" >/tmp/app-switcher.fifo')
   elif fast_switching == "true":
-    os.system('echo "mc fast" >/tmp/app-switcher.fifo')
+    os.system('echo "switch mc fast" >/tmp/app-switcher.fifo')

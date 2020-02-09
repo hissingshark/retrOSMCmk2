@@ -310,7 +310,7 @@ else:
   if target_slot == -1:
     exit() # backed out of session manager without choosing anything
 
-  # give the scared people something to look at whilst Kodi is shutting down
+  # something to look at whilst Kodi is shutting down
   if (kodi_signals == "false" and fast_switching == "false"):
     xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
 
@@ -326,7 +326,7 @@ else:
   if (kodi_signals == "true" or fast_switching == "true"):
     os.system('echo "switch es fast %s %s" >/tmp/app-switcher.fifo' % (target_slot, fix_4k))
   else:
-    os.system('echo "switch es slow %s" >/tmp/app-switcher.fifo' % (fix_4k))
+    os.system('echo "switch es slow 0 %s" >/tmp/app-switcher.fifo' % (fix_4k))
 
   exit()
   # RetroPie launched - we are gone
