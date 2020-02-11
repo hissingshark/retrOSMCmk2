@@ -81,7 +81,11 @@ function firstTimeSetup() {
   cd resources
   zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
   cd ..
-  
+  # prepare a config destination to avoid a race condition (Kodi only creates the folder if settings have been saved - but addon may need it sooner)
+  if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
+    mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
+  fi
+
   # install and enable services
   cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
@@ -152,7 +156,7 @@ function patchRetroPie() {
   sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  
+
   sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/local ver="$(get_ver_sdl2)+/s/+./+1/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.8"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
