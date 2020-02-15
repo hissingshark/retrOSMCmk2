@@ -77,9 +77,22 @@ function firstTimeSetup() {
   fi
   cp resources/{runcommand-onend.sh,runcommand-onstart.sh} /opt/retropie/configs/all/ || { echo "FAILED!"; exit 1; }
 
-  # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
+  # retrOSMCmk2 Kodi addon installation allowing for clean or upgrade from beta or alpha types
   cd resources
-  zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+  if [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie ]]; then # clean install of addon
+    # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
+     zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+     addon_advice="Don't forget to install the launcher addon in Kodi with \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
+  elif [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie/resources ]]; then # upgrade from alpha version of addon
+    # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
+    zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+    addon_advice="Don't forget to install the new launcher addon in Kodi!  First remove the old one.  Then go to \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
+  else # updating a beta version of the addon
+    # sufficient to update contents of addon folder
+    rm -r /home/osmc/.kodi/addons/script.launch.retropie
+    sudo cp -a script.launch.retropie /home/osmc/.kodi/addons || { echo "FAILED!"; exit 1; }
+    addon_advice="The launcher addon for Kodi has been updated in place"
+  fi
   cd ..
   # prepare a config destination to avoid a race condition (Kodi only creates the folder if settings have been saved - but addon may need it sooner)
   if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
@@ -118,7 +131,7 @@ function firstTimeSetup() {
     --msgbox "\
     \n$LOGO has just installed RetroPie and its Kodi addon for you.\
     \n\nPlease run RetroPie-Setup from the next menu to start installing your chosen emulators.\
-    \n\nDon't forget to enable the RetroPie launcher in your Kodi Program Addons! (a reboot may be required for it to be listed there)\
+    \n\n$addon_advice\
     " 0 0
 
   return 0
