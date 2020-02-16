@@ -11,6 +11,12 @@ DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
 
+###############
+# GLOBAL FLAG #
+###############
+
+reinstall_sdl2=0
+
 
 ###################
 # SETUP FUNCTIONS #
@@ -83,15 +89,18 @@ function firstTimeSetup() {
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
      zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
      addon_advice="Don't forget to install the launcher addon in Kodi with \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
-  elif [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie/resources ]]; then # upgrade from alpha version of addon
+  elif [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie/resources ]]; then # upgrade from alpha version of addon (this scenario must mean we are updating the installer itself - not a re-install)
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
     zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
     addon_advice="Don't forget to install the new launcher addon in Kodi!  First remove the old one.  Then go to \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
+    # must also update SDL2 as they may be using a stale version without the custom patches
+    # but we must defer with this flag it until after we've patched the RetroPie install otherwise it'll fail to download our version
+    reinstall_sdl2=1
   else # updating a beta version of the addon
     # sufficient to update contents of addon folder
     rm -r /home/osmc/.kodi/addons/script.launch.retropie
     sudo cp -a script.launch.retropie /home/osmc/.kodi/addons || { echo "FAILED!"; exit 1; }
-    addon_advice="The launcher addon for Kodi has been updated in place"
+    addon_advice="The launcher addon for Kodi has been updated in place\n  - no further action required."
   fi
   cd ..
   # prepare a config destination to avoid a race condition (Kodi only creates the folder if settings have been saved - but addon may need it sooner)
@@ -131,7 +140,14 @@ function firstTimeSetup() {
     --msgbox "\
     \n$LOGO has just installed RetroPie and its Kodi addon for you.\
     \n\nPlease run RetroPie-Setup from the next menu to start installing your chosen emulators.\
-    \n\n$addon_advice\
+    " 0 0
+  sleep 0.5
+  clear
+  dialog \
+    --backtitle "$BACKTITLE" \
+    --title "INSTALLATION COMPLETE" \
+    --msgbox "\
+    \n$addon_advice\
     " 0 0
 
   return 0
@@ -180,6 +196,28 @@ function patchRetroPie() {
   # PATCH 4
   # fix 4k/4K+ platform identification under new and old kernels
   sed -i 's/Vero4K|Vero4KPlus/*Vero*4K*/' submodule/RetroPie-Setup/scriptmodules/system.sh
+
+  # deferred upgrade to patched sdl2 version
+  if [[ "$reinstall_sdl2" == "1" ]]; then
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "SDL2 Installation" \
+      --infobox "\
+      \nJust \(re\)installing SDL2 libraries to ensure custom versions are in place...\n\
+      " 0 0
+    sleep 2
+    sudo submodule/RetroPie-Setup/retropie_packages.sh sdl2 install_bin || { echo "FAILED!"; exit 1; }
+    reinstall_sdl2=0
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "SDL2 Installation" \
+      --infobox "\
+      \nSUCCESS!\n\
+      " 0 0
+    sleep 2
+  fi
 
   return 0
 }
