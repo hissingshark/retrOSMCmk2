@@ -73,10 +73,13 @@ function firstTimeSetup() {
   sleep 2
 
   # install scripts into RetroPie directories
-  # create them first if they don't exist - RetroPie-Setup wont remove them at install/update
+  # create directories first if they don't exist - RetroPie-Setup wont remove them at install/update
   if [[ ! -d /home/osmc/RetroPie/scripts ]]; then
     mkdir -p /home/osmc/RetroPie/scripts
   fi
+  # remove any old style scripts first
+  rm -f /home/osmc/RetroPie/scripts/launcher.sh
+  # copy over all new scripts
   cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
   if [[ ! -d /opt/retropie/configs/all/ ]]; then
     mkdir -p /opt/retropie/configs/all/
@@ -109,6 +112,8 @@ function firstTimeSetup() {
   fi
 
   # install and enable services
+  # remove any old style service unit first
+  rm -f /etc/systemd/system/emulationstation.service
   cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
   systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
