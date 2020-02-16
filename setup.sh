@@ -91,11 +91,11 @@ function firstTimeSetup() {
   if [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie ]]; then # clean install of addon
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
      zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
-     addon_advice="Don't forget to install the launcher addon in Kodi with \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
+     addon_advice="Don't forget to install the launcher addon in Kodi with \"My Addons -> Install from zip file\".\nYou'll find the zip under \"Home folder\""
   elif [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie/resources ]]; then # upgrade from alpha version of addon (this scenario must mean we are updating the installer itself - not a re-install)
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
     zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
-    addon_advice="Don't forget to install the new launcher addon in Kodi!  First remove the old one.  Then go to \"My Addons -> Install from zip file\".  You'll find the zip under \"Home folder\""
+    addon_advice="Don't forget to install the new launcher addon in Kodi!\nFirst remove the old one.  Then go to \"My Addons -> Install from zip file\".\nYou'll find the zip under \"Home folder\""
     # must also update SDL2 as they may be using a stale version without the custom patches
     # but we must defer with this flag it until after we've patched the RetroPie install otherwise it'll fail to download our version
     reinstall_sdl2=1
@@ -143,7 +143,7 @@ function firstTimeSetup() {
     --backtitle "$BACKTITLE" \
     --title "INSTALLATION COMPLETE" \
     --msgbox "\
-    \n$LOGO has just installed RetroPie and its Kodi addon for you.\
+    \n$LOGO has just installed RetroPie for you.\
     \n\nPlease run RetroPie-Setup from the next menu to start installing your chosen emulators.\
     " 0 0
   sleep 0.5
@@ -209,7 +209,7 @@ function patchRetroPie() {
       --backtitle "$BACKTITLE" \
       --title "SDL2 Installation" \
       --infobox "\
-      \nJust \(re\)installing SDL2 libraries to ensure custom versions are in place...\n\
+      \nJust (re)installing SDL2 libraries to ensure custom versions are in place...\n\
       " 0 0
     sleep 2
     sudo submodule/RetroPie-Setup/retropie_packages.sh sdl2 install_bin || { echo "FAILED!"; exit 1; }
