@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<keymap>
+	<global>
+		<remote>
+			<back/>
+			<select/>
+			<info/>
+			<up/>
+			<down/>
+			<left/>
+			<right/>
+			<guide/>
+			<red/>
+      <yellow/>
+			<green/>
+			<blue/>
+		</remote>
+	</global>
+  <AddonSettings>
+    <remote>
+      <back/>
+    </remote>
+  </AddonSettings>
+</keymap>

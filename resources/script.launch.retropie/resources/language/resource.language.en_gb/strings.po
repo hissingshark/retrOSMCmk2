@@ -1,0 +1,106 @@
+# Kodi Media Center language file
+# Addon Name: Skin Widgets
+# Addon id: service.skin.widgets
+# Addon Provider: Martijn, phil65
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Kodi Translation Team\n"
+"Language-Team: English (http://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#32001"
+msgid "Remote Exit Key"
+msgstr ""
+
+msgctxt "#32010"
+msgid "Configure a CEC remote key to exit RetroPie"
+msgstr ""
+
+msgctxt "#32011"
+msgid "Enable exit key"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Program keycode"
+msgstr ""
+
+msgctxt "#32013"
+msgid "View current keycode"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Test exit key"
+msgstr ""
+
+msgctxt "#32002"
+msgid "Gamepad Exit Button"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Configure a gamepad button to exit RetroPie"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Enable exit button"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Program button code"
+msgstr ""
+
+msgctxt "#32023"
+msgid "View current button code"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Test exit button"
+msgstr ""
+
+msgctxt "#32004"
+msgid "Fast App Switching"
+msgstr ""
+
+msgctxt "#32040"
+msgid "Instantly switch between Kodi and Emulationstation!\nA remote and/or gamepad exit button should be configured"
+msgstr ""
+
+msgctxt "#32041"
+msgid "Enable fast switching"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Unfortunately this option is presently unavailable on the RPi"
+msgstr ""
+
+msgctxt "#32003"
+msgid "CEC Standby Signals"
+msgstr ""
+
+msgctxt "#32030"
+msgid "Kodi may be configured to put a TV/AVR into standby at shutdown\n - unless blocked these signals will happen when launching RetroPie!"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Block CEC signals"
+msgstr ""
+
+msgctxt "#32005"
+msgid "4K TV Fix"
+msgstr ""
+
+msgctxt "#32050"
+msgid "Some 4K TVs give a scrambled or flickering picture at launch\n - only use this if you have the problem or you'll induce the same!"
+msgstr ""
+
+msgctxt "#32051"
+msgid "Switch resolution at launch"
+msgstr ""
+

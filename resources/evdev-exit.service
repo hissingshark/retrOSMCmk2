@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitors a gamepad for a button combination to exit RetroPie and return to Kodi
+
+[Service]
+Type=simple
+WorkingDirectory=/home/osmc/RetroPie/scripts
+ExecStart=/home/osmc/RetroPie/scripts/evdev-exit.py
+ExecStop=/home/osmc/RetroPie/scripts/evdev-helper.sh KILL 0 EXIT
+
+[Install]
+WantedBy=multi-user.target
