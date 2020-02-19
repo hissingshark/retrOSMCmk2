@@ -207,7 +207,6 @@ while true; do
     elif [[ "$MODE" == "delete" ]]; then
       ACTIVE_SESSION="${opts[1]}"
       systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
-#      sudo kill -KILL "-${PGIDS[$ACTIVE_SESSION]}"
       cutArray $ACTIVE_SESSION PGIDS
       cutArray $ACTIVE_SESSION PLATFORMS
       cutArray $ACTIVE_SESSION ROMS
