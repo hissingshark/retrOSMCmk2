@@ -199,10 +199,10 @@ while true; do
           ;;
       esac
 
-      # multi word ROM title forms all subsequent array elements so remove first 2 then store remainig array as string
+      # multi word ROM title forms all subsequent array elements so remove first 2 then store remaining array as string
       cutArray 0 opts
       cutArray 0 opts
-      ROMS[$ACTIVE_SESSION]="${opts[@]}"
+      ROMS[$ACTIVE_SESSION]=$(echo "${opts[@]}" | sed 's/:/-/g') # swap : control character for -
 
     elif [[ "$MODE" == "delete" ]]; then
       ACTIVE_SESSION="${opts[1]}"
