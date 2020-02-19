@@ -75,7 +75,130 @@ while true; do
       echo "${TARGETS[$ACTIVE_SESSION]}" > "$FIFO"
 
     elif [[ "$MODE" == "update" ]]; then
-      PLATFORMS[$ACTIVE_SESSION]="${opts[1]}"
+      # lookup full platform name to beautify it in the menu
+      case "${opts[1]}" in
+        amiga)
+          PLATFORMS[$ACTIVE_SESSION]="Commodore Amiga"
+          ;;
+        amstradcpc)
+          PLATFORMS[$ACTIVE_SESSION]="Amstrad CPC"
+          ;;
+        arcade)
+          PLATFORMS[$ACTIVE_SESSION]="Arcade Machine"
+          ;;
+        atari2600)
+          PLATFORMS[$ACTIVE_SESSION]="Atari 2600"
+          ;;
+        atari5200)
+          PLATFORMS[$ACTIVE_SESSION]="Atari52 00"
+          ;;
+        atari7800)
+          PLATFORMS[$ACTIVE_SESSION]="Atari 7200"
+          ;;
+        atari800)
+          PLATFORMS[$ACTIVE_SESSION]="Atari 800"
+          ;;
+        atarilynx)
+          PLATFORMS[$ACTIVE_SESSION]="Atari Lynx"
+          ;;
+        c64)
+          PLATFORMS[$ACTIVE_SESSION]="Commodore 64"
+          ;;
+        dreamcast)
+          PLATFORMS[$ACTIVE_SESSION]="Sega Dreamcast"
+          ;;
+        fba)
+          PLATFORMS[$ACTIVE_SESSION]="Final Burn Alpha"
+          ;;
+        fds)
+          PLATFORMS[$ACTIVE_SESSION]="Famicom Disk System"
+          ;;
+        gamegear)
+          PLATFORMS[$ACTIVE_SESSION]="Sega Gamegear"
+          ;;
+        gb)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo Gameboy"
+          ;;
+        gba)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo Gameboy Advance"
+          ;;
+        gbc)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo Gameboy Colour"
+          ;;
+        genesis)
+          PLATFORMS[$ACTIVE_SESSION]="Sega Genesis"
+          ;;
+        mame-libretro)
+          PLATFORMS[$ACTIVE_SESSION]="Arcade Machine"
+          ;;
+        mame-mame4all)
+          PLATFORMS[$ACTIVE_SESSION]="Arcade Machine"
+          ;;
+        mastersystem)
+          PLATFORMS[$ACTIVE_SESSION]="Sega Master System"
+          ;;
+        megadrive)
+          PLATFORMS[$ACTIVE_SESSION]="Sega Megadrive"
+          ;;
+        n64)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo 64 (N64)"
+          ;;
+        nds)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo DS"
+          ;;
+        neogeo)
+          PLATFORMS[$ACTIVE_SESSION]="Neo Geo"
+          ;;
+        nes)
+          PLATFORMS[$ACTIVE_SESSION]="Nintendo Entertainment System (NES)"
+          ;;
+        ngp)
+          PLATFORMS[$ACTIVE_SESSION]="Neo Geo Pocket"
+          ;;
+        ngpc)
+          PLATFORMS[$ACTIVE_SESSION]="Neo Geo Pocket Color"
+          ;;
+        pc)
+          PLATFORMS[$ACTIVE_SESSION]="DOSBox"
+          ;;
+        pcengine)
+          PLATFORMS[$ACTIVE_SESSION]="TurboGrafx-16 Entertainment SuperSystem"
+          ;;
+        ports)
+          PLATFORMS[$ACTIVE_SESSION]="Port"
+          ;;
+        psp)
+          PLATFORMS[$ACTIVE_SESSION]="Sony Playstation Portable"
+          ;;
+        psx)
+          PLATFORMS[$ACTIVE_SESSION]="Sony Playstation (PSX)"
+          ;;
+        scummvm)
+          PLATFORMS[$ACTIVE_SESSION]="ScummVM"
+          ;;
+        sega32x)
+          PLATFORMS[$ACTIVE_SESSION]="Sega 32X (Project Mars)"
+          ;;
+        segacd)
+          PLATFORMS[$ACTIVE_SESSION]="Sega CD"
+          ;;
+        sg-1000)
+          PLATFORMS[$ACTIVE_SESSION]="Sega SG-1000"
+          ;;
+        snes)
+          PLATFORMS[$ACTIVE_SESSION]="Super Nintendo Entertainment System (SNES)"
+          ;;
+        vectrex)
+          PLATFORMS[$ACTIVE_SESSION]="Vectrex"
+          ;;
+        zxspectrum)
+          PLATFORMS[$ACTIVE_SESSION]="Sinclair ZX Spectrum"
+          ;;
+        *)
+          PLATFORMS[$ACTIVE_SESSION]="${opts[1]}"
+          ;;
+      esac
+
       # multi word ROM title forms all subsequent array elements so remove first 2 then store remainig array as string
       cutArray 0 opts
       cutArray 0 opts
