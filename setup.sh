@@ -160,7 +160,10 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
-  # ignore patches for RPi series
+  # provide q3lite as RetroPie module
+  wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
+
+  # ignore subsequent patches for RPi series
   if [[ "$platform" == "rpi" ]]; then
     return 0
   fi
