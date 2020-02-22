@@ -383,11 +383,17 @@ function menuManageThis() {
         # reset any corruption in the repo then pull in latest version
         su osmc -c -- 'git reset --hard HEAD'
         su osmc -c -- 'git pull'
-        # install the components
-        firstTimeSetup
+
+        # install the components with the new version on disc
+        ../retrOSMCmk2/setup.sh SETUP
+
         # avoid patching already patched files
         su osmc -c -- "git -C submodule/RetroPie-Setup reset --hard"
-        patchRetroPie
+        # then patch using the new version
+        ../retrOSMCmk2/setup.sh PATCH
+
+        # restart this script to load the new version
+        exec ../retrOSMCmk2/setup.sh
         ;;
     esac
   done
@@ -426,7 +432,13 @@ if [[ ! -d submodule/RetroPie-Setup ]]; then
   firstTimeSetup
 fi
 
-# RetroPie-Setup will - post update - call this script specifically to restore the lost patches
+# RetroPie-Setup will - post update - call this script specifically to re-install scripts or restore the lost patches
+if [[ "$1" == "SETUP" ]]; then
+  firstTimeSetup
+  popd >/dev/null
+  exit 0
+fi
+
 if [[ "$1" == "PATCH" ]]; then
   patchRetroPie
   popd >/dev/null
