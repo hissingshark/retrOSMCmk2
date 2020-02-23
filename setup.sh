@@ -10,6 +10,7 @@ BACKTITLE="$LOGO - Installing RetroPie on your Vero4K"
 DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
+FIFO=/tmp/app-switcher.fifo
 
 ###############
 # GLOBAL FLAG #
@@ -117,7 +118,55 @@ function firstTimeSetup() {
   cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
   systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
-  systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
+  # app-switcher needs to be restarted if updated - but there may be sessions running, which will be lost
+  # give user the option of closing those sessions now or rebooting the service later
+  echo "dump" > $FIFO
+  sleep 0.1
+  session_count=$(cat $FIFO)
+  if [[ "$session_count" == "0" ]]; then
+    systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
+  else
+    session_count=${session_count%%:*} # retrieve 1st value of a : delimited string
+    plural='s'
+    if [[ "$session_count" == "1" ]]; then
+      plural=''
+    fi
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "WARNING!" \
+      --defaultno --no-label "Later" --yes-label "Now" \
+      --yesno "\
+      \nThe $LOGO fast-switching has $session_count game session$plural running in memory! \
+      \nBut it needs to be restarted for updates to take affect.\
+      \n\nYou can restart LATER, giving you a chance to check you've game saved properly.
+      \nOr restart NOW and they'll be deleted for you.\
+      \n\nNOTE - Let this be a reminder that sleeping games are not saved games!  A loss of power or a crash and they are gone.\
+      " 0 0 || session_count=-1
+  fi
+  # sessions to be closed before restart
+  if [[ "$session_count" != "-1" ]]; then
+    for (( session=$session_count; session>0; session-- )); do
+      clear
+      dialog \
+        --backtitle "$BACKTITLE" \
+        --title "Progress" \
+        --infobox "\
+        \nClosing session: $session of $session_count\n\
+        " 0 0
+      echo "delete 1" > $FIFO
+      sleep 1
+    done
+    clear
+    dialog \
+      --backtitle "$BACKTITLE" \
+      --title "Progress" \
+      --infobox "\
+      \nRestarting app-switcher service now...\n\
+      " 0 0
+    sleep 2
+    systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
+  fi
 
   # perform RPi specific configuration
   if [[ "$platform" == "rpi" ]]; then
