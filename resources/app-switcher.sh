@@ -238,8 +238,13 @@ while true; do
           continue
         fi
 
-          # re-enable ALSA sink on the PA server
-          sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
+        # run user script if present
+        if [[ -f "/home/osmc/RetroPie/scripts/kodi-stops.sh" ]]; then
+          bash "/home/osmc/RetroPie/scripts/kodi-stops.sh"
+        fi
+
+        # re-enable ALSA sink on the PA server
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
@@ -297,6 +302,11 @@ while true; do
         # exit methods no longer required
         systemctl stop cec-exit
         systemctl stop evdev-exit
+
+        # run user script if present
+        if [[ -f "/home/osmc/RetroPie/scripts/kodi-starts.sh" ]]; then
+          bash "/home/osmc/RetroPie/scripts/kodi-starts.sh"
+        fi
 
         # start fresh Kodi session or restart the halted one
         if [[ "${PGIDS[0]}" == "null" ]]; then
