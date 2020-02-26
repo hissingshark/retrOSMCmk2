@@ -21,20 +21,20 @@ strindex() {
 #Resolution and aspectratio
 function resulution(){
 	case $1 in
-  		480p)           X=720 	Y=480  	aspect="4:3"	vm=2		cs=27		hz=60	;;
-	  	720p)           X=1280 	Y=720	aspect="16:9"	vm=4		cs=74.25	hz=60	;;
-		1080i)     	X=1920 	Y=540	aspect="16:9"	vm=5		cs=74.25	hz=60 	;;
-		480i)		X=1440  Y=480  	aspect="4:3"	vm=6		cs=74.25	hz=60 	;;
-		1080p)        	X=1920 	Y=1080	aspect="16:9"	vm=16		cs=148.5	hz=60 	;;
+		480p)           X=720 	Y=480  	aspect="4:3"	vm=2		cs=27		hz=60	;;
+		720p)           X=1280 	Y=720	aspect="16:9"	vm=4		cs=74		hz=60	;;
+		1080i)     	X=1920 	Y=1080	aspect="16:9"	vm=5		cs=74		hz=60 	;;
+		480i)		X=1440  Y=480  	aspect="4:3"	vm=6		cs=74		hz=60 	;;
+		1080p)        	X=1920 	Y=1080	aspect="16:9"	vm=16		cs=148		hz=60 	;;
 		576p50)         X=720  	Y=576 	aspect="4:3"	vm=17		cs=27		hz=50 	;;
-		720p50)		X=1280 	Y=720	aspect="16:9"	vm=19		cs=74.25	hz=50 	;;
-        	576i50)		X=1440	Y=288	aspect="4:3"	vm=21		cs=27		hz=50 	;;
-		1080p50)	X=1920 	Y=1080 	aspect="16:9"	vm=31		cs=148.5	hz=50 	;;
-		1080p24)	X=1920 	Y=1080 	aspect="16:9"	vm=32		cs=74.25	hz=24 	;;
-		1080p25)	X=1920 	Y=1080 	aspect="16:9"	vm=33		cs=74.25	hz=25 	;;
-		1080p30)	X=1920 	Y=1080 	aspect="16:9"	vm=34		cs=74.25	hz=30 	;;
-       		1080i50)	X=1920 	Y=540 	aspect="16:9"	vm=40		cs=148.5	hz=100 	;;
-  		*)		X="n/a" Y="n/a" aspect="n/a"  	vm="n/a"	cs="n/a"        hz="n/a"   ;;
+		720p50)		X=1280 	Y=720	aspect="16:9"	vm=19		cs=74		hz=50 	;;
+		576i50)		X=1440	Y=576	aspect="4:3"	vm=21		cs=27		hz=50 	;;
+		1080p50)	X=1920 	Y=1080 	aspect="16:9"	vm=31		cs=148		hz=50 	;;
+		1080p24)	X=1920 	Y=1080 	aspect="16:9"	vm=32		cs=74		hz=24 	;;
+		1080p25)	X=1920 	Y=1080 	aspect="16:9"	vm=33		cs=74		hz=25 	;;
+		1080p30)	X=1920 	Y=1080 	aspect="16:9"	vm=34		cs=74		hz=30 	;;
+		1080i50)	X=1920 	Y=1080 	aspect="16:9"	vm=40		cs=148		hz=100 	;;
+		*)		X="n/a" Y="n/a" aspect="n/a"  	vm="n/a"	cs="n/a"        hz="n/a"   ;;
 	esac
 	reso="$vm,$aspect,$X,$Y,$hz,$cs"
 	echo "$reso"
@@ -56,7 +56,7 @@ case $1 in
 		vicm=$(resulution $pref2)
 		IFS=',' arr=(${vicm})
 		IFS=$OLDIFS
-		tvline="state 0x120009 [HDMI CEA ${arr[0]}) RGB lim ${arr[1]}], "${arr[2]}"x"${arr[3]}" @ ${arr[4]}.00Hz, $(intpro $pref2)"
+		tvline="state 0x120009 [HDMI CEA (${arr[0]}) RGB lim ${arr[1]}], "${arr[2]}"x"${arr[3]}" @ ${arr[4]}.00Hz, $(intpro $pref2)"
 		echo $tvline
 		;;
 	-m*)
@@ -92,8 +92,10 @@ case $1 in
 		else 
 			if [[ "$2" =~ "PAL" ]]; then
 				sudo sh -c 'echo 576p50hz > /sys/class/display/mode'
+				fbset -g 720 576 720 1152 32
 			elif [[ "$2" =~ "NTSC" ]]; then
-				sudo sh -c 'echo 480p60hz > /sys/class/display/mode' 
+				sudo sh -c 'echo 480p60hz > /sys/class/display/mode'
+				fbset -g 720 480 720 960 32
 			else
 				echo "Not cointaing right information, set PAL or NTSC"
 			fi
@@ -107,42 +109,55 @@ case $1 in
 			case $2 in
 				"CEA 2")
 					sudo sh -c 'echo 480p60hz > /sys/class/display/mode'
+					fbset -g 720 480 720 960 32
 				;;
 		                "CEA 4")
 					sudo sh -c 'echo 720p60hz > /sys/class/display/mode'
+					fbset -g 1280 720 1280 1440 32
                 		;;
                 		"CEA 5")
 					sudo sh -c 'echo 1080i60hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
 		                ;;
 				"CEA 6")
 					sudo sh -c 'echo 480i60hz > /sys/class/display/mode'
+					fbset -g 1440 480 1440 960 32
 		                ;;
                 		"CEA 16")
                     			sudo sh -c 'echo 1080p60hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 17")
                     			sudo sh -c 'echo 576p50hz > /sys/class/display/mode'
+					fbset -g 720 576 720 1152 32
 		                ;;
                 		"CEA 19")
                     			sudo sh -c 'echo 720p50hz > /sys/class/display/mode'
+					fbset -g 1280 720 1280 1440 32
 		                ;;
 				"CEA 21")
                     			sudo sh -c 'echo 576i50hz > /sys/class/display/mode'
+					fbset -g 1440 576 1440 1152 32
 		                ;;
                 		"CEA 31")
                     			sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 32")
                     			sudo sh -c 'echo 1080p24hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
                 		;;
                 		"CEA 33")
                     			sudo sh -c 'echo 1080p25hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 34")
                     			sudo sh -c 'echo 1080p30hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
                 		;;
                 		"CEA 40")
                     			sudo sh -c 'echo 1080i50hz > /sys/class/display/mode'
+					fbset -g 1920 1080 1920 2160 32
 		                ;;
 				*)
 					echo "Not a valid mode"
