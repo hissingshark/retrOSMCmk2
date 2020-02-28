@@ -221,8 +221,8 @@ while true; do
 
       if [[ "$DESTINATION" == "es" ]]; then
         if [[ "$4KFIX" == "true" ]]; then
-          sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'
-          sudo sh -c 'fbset -g 1920 1080 1920 2160 32'
+          echo '1080p50hz' > /sys/class/display/mode
+          fbset -g 1920 1080 1920 2160 32
         fi
 
         # shutdown or halt Kodi processes
