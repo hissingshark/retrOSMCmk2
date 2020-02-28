@@ -109,7 +109,7 @@ function firstTimeSetup() {
   cd ..
   # prepare a config destination to avoid a race condition (Kodi only creates the folder if settings have been saved - but addon may need it sooner)
   if [[ ! -d /home/osmc/.kodi/userdata/addon_data/script.launch.retropie ]]; then
-    mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie
+    su osmc -c -- 'mkdir -p /home/osmc/.kodi/userdata/addon_data/script.launch.retropie'
   fi
 
   # install and enable services
