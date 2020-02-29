@@ -29,6 +29,7 @@ function cutArray() {
 
 ACTIVE_SESSION=0 # active session slot (not an index as 0 is Kodi)
 # list of each session's...
+FBSET=(null) # framebuffer geometry
 PGIDS=(null) # process-group ID
 PLATFORMS=(OSMC) # currently emulated platform
 ROMS=(Kodi) # ROM in play
@@ -203,6 +204,7 @@ while true; do
     elif [[ "$MODE" == "delete" ]]; then
       ACTIVE_SESSION="${opts[1]}"
       systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
+      cutArray $ACTIVE_SESSION FBSET
       cutArray $ACTIVE_SESSION PGIDS
       cutArray $ACTIVE_SESSION PLATFORMS
       cutArray $ACTIVE_SESSION ROMS
@@ -216,10 +218,8 @@ while true; do
 
 
       if [[ "$DESTINATION" == "es" ]]; then
-        if [[ "$4KFIX" == "true" ]]; then
-          echo '1080p50hz' > /sys/class/display/mode
-          fbset -g 1920 1080 1920 2160 32
-        fi
+        # backup the Kodi framebuffer geometry
+        FBSET[0]=$(fbset | grep geometry | sed 's/^.*geometry //')
 
         # shutdown or halt Kodi processes
         if [[ "$SPEED" == "slow" ]]; then
@@ -244,6 +244,15 @@ while true; do
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
+          # set an almost universally acceptable default framebuffer geometry
+          # TODO make this user selectable in addon settings for odd TV and monitor cases as "4K Fix" - they also need the mode setting though
+          if [[ "$4KFIX" == "true" ]]; then
+            echo '1080p50hz' > /sys/class/display/mode
+            fbset -g 1920 1080 1920 2160 32
+          else
+            fbset -g 1920 1080 1920 2160 32
+          fi
+
           # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
           sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
 
@@ -259,9 +268,11 @@ while true; do
           systemctl start emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
           sleep 2
 
-          # create list of unique PGIDS (in practice just appends the newest one as the active session)
+          # create list of unique PGIDS
           for PGID in $(ps xao pgid,comm | grep "emulationstatio" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' '); do
+            # append the newest one as the active session
             if [[ ! "${PGIDS[@]}" =~ "$PGID" ]]; then
+              FBSET+=(null) # to be confirmed when switching out
               PGIDS+=($PGID)
               PLATFORMS+=("EmulationStation")
               ROMS+=("N/A")
@@ -271,6 +282,8 @@ while true; do
         # ...or continue selected halted processes
         else
           ACTIVE_SESSION=$REQUESTED_SESSION
+          # set framebuffer geometry from previous visit to session
+          fbset -g ${FBSET[$REQUESTED_SESSION]}
           # minimise any audio crackle on resuming PA
           sleep 0.5
           sudo kill -CONT "-${PGIDS[$REQUESTED_SESSION]}"
@@ -279,11 +292,15 @@ while true; do
       elif [[ "$DESTINATION" == "mc" ]]; then
         if [[ "$SPEED" == "slow" ]]; then
           systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
+          cutArray $ACTIVE_SESSION FBSET
           cutArray $ACTIVE_SESSION PGIDS
           cutArray $ACTIVE_SESSION PLATFORMS
           cutArray $ACTIVE_SESSION ROMS
           cutArray $ACTIVE_SESSION TARGETS
         elif [[ "$SPEED" == "fast" ]]; then
+          # store framebuffer geometry of the outgoing session
+          FBSET[$ACTIVE_SESSION]=$(fbset | grep geometry | sed 's/^.*geometry //')
+          # halt session
           sudo kill -STOP "-${PGIDS[$ACTIVE_SESSION]}"
           # restore the console binding for Kodi
           echo 0 >/sys/class/vtconsole/vtcon1/bind
@@ -291,6 +308,8 @@ while true; do
           continue
         fi
         ACTIVE_SESSION=0
+        # restore the framebuffer geometry for Kodi
+        fbset -g ${FBSET[$ACTIVE_SESSION]}
 
         # disconnects emulators from the audio device to avoid blocking Kodi from it
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
