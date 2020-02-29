@@ -4,10 +4,6 @@
 # slow mode stops and starts services in turn
 # fast mode halts and resumes processes via "kill STOP/CONT"
 
-#LOG=/home/osmc/debug.log
-#echo  "Log Starts.." > $LOG
-#echo  "" >> $LOG
-
 #############
 # FUNCTIONS #
 #############
