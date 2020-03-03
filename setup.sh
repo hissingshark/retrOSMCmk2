@@ -91,19 +91,21 @@ function firstTimeSetup() {
   cd resources
   if [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie ]]; then # clean install of addon
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
-     zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+     su osmc -c -- 'zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie' || { echo "FAILED!"; exit 1; }
      addon_advice="Don't forget to install the launcher addon in Kodi with \"My Addons -> Install from zip file\".\nYou'll find the zip under \"Home folder\""
   elif [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie/resources ]]; then # upgrade from alpha version of addon (this scenario must mean we are updating the installer itself - not a re-install)
-    # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
-    zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie || { echo "FAILED!"; exit 1; }
+    # previous installer created addon structure as root - will block user attempts to install from zip
+    chown -R osmc:osmc /home/osmc/.kodi/addons/script.launch.retropie
+    # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder but...
+    su osmc -c -- 'zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie' || { echo "FAILED!"; exit 1; }
     addon_advice="Don't forget to install the new launcher addon in Kodi!\nFirst remove the old one.  Then go to \"My Addons -> Install from zip file\".\nYou'll find the zip under \"Home folder\""
-    # must also update SDL2 as they may be using a stale version without the custom patches
+    # ...must also update SDL2 as they may be using a stale version without the custom patches
     # but we must defer with this flag it until after we've patched the RetroPie install otherwise it'll fail to download our version
     reinstall_sdl2=1
   else # updating a beta version of the addon
     # sufficient to update contents of addon folder
     rm -r /home/osmc/.kodi/addons/script.launch.retropie
-    sudo cp -a script.launch.retropie /home/osmc/.kodi/addons || { echo "FAILED!"; exit 1; }
+    cp -a script.launch.retropie /home/osmc/.kodi/addons || { echo "FAILED!"; exit 1; }
     addon_advice="The launcher addon for Kodi has been updated in place\n  - no further action required."
   fi
   cd ..
