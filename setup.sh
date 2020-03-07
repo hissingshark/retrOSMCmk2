@@ -99,9 +99,6 @@ function firstTimeSetup() {
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder but...
     su osmc -c -- 'zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie' || { echo "FAILED!"; exit 1; }
     addon_advice="Don't forget to install the new launcher addon in Kodi!\nFirst remove the old one.  Then go to \"My Addons -> Install from zip file\".\nYou'll find the zip under \"Home folder\""
-    # ...must also update SDL2 as they may be using a stale version without the custom patches
-    # but we must defer with this flag it until after we've patched the RetroPie install otherwise it'll fail to download our version
-    reinstall_sdl2=1
   else # updating a beta version of the addon
     # sufficient to update contents of addon folder
     rm -r /home/osmc/.kodi/addons/script.launch.retropie
@@ -257,27 +254,26 @@ function patchRetroPie() {
   # fix 4k/4K+ platform identification under new and old kernels
   sed -i 's/Vero4K|Vero4KPlus/*Vero*4K*/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
-  # deferred upgrade to patched sdl2 version
-  if [[ "$reinstall_sdl2" == "1" ]]; then
-    clear
-    dialog \
-      --backtitle "$BACKTITLE" \
-      --title "SDL2 Installation" \
-      --infobox "\
-      \nJust (re)installing SDL2 libraries to ensure custom versions are in place...\n\
-      " 0 0
-    sleep 2
-    sudo submodule/RetroPie-Setup/retropie_packages.sh sdl2 install_bin || { echo "FAILED!"; exit 1; }
-    reinstall_sdl2=0
-    clear
-    dialog \
-      --backtitle "$BACKTITLE" \
-      --title "SDL2 Installation" \
-      --infobox "\
-      \nSUCCESS!\n\
-      " 0 0
-    sleep 2
-  fi
+  # must update SDL2 as they may be using a stale version without the custom patches
+  # but we defer it until after we've patched the RetroPie install otherwise it'll fail to download our version
+  clear
+  dialog \
+    --backtitle "$BACKTITLE" \
+    --title "SDL2 Installation" \
+    --infobox "\
+    \nJust (re)installing SDL2 libraries to ensure custom versions are in place...\n\
+    " 0 0
+  sleep 2
+  sudo submodule/RetroPie-Setup/retropie_packages.sh sdl2 install_bin || { echo "FAILED!"; exit 1; }
+  reinstall_sdl2=0
+  clear
+  dialog \
+    --backtitle "$BACKTITLE" \
+    --title "SDL2 Installation" \
+    --infobox "\
+    \nSUCCESS!\n\
+    " 0 0
+  sleep 2
 
   return 0
 }
