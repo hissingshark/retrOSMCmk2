@@ -197,9 +197,8 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def deleteSlot(self):
       global SWITCHER_FIFO
       os.system('echo "delete %d" > %s' % (self.slot, SWITCHER_FIFO))
-      xbmc.log("DEBUG: switcher got delete %d > %s" % (self.slot, SWITCHER_FIFO), level=xbmc.LOGNOTICE)
       self.parent.close()
-      # trigger redraw somehow?
+      # TODO trigger redraw somehow?
 
 
 #
