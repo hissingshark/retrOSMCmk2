@@ -22,6 +22,29 @@ function cutArray() {
 }
 
 
+# deletes a session and its data
+function rmSession() {
+      systemctl stop emulationstation@${TARGETS[$1]}.service
+      cutArray $1 FBSET
+      cutArray $1 PGIDS
+      cutArray $1 PLATFORMS
+      cutArray $1 ROMS
+      cutArray $1 TARGETS
+}
+
+
+# cleanup in event of a caught SIGTERM
+function cleanUp() {
+  if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
+    sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+  fi
+
+  for ((slot=1; slot<${#PGIDS[@]}; slot++)); do
+    rmSession 1
+  done
+
+  exit
+}
 
 ##############
 #  VARIABLES #
@@ -34,7 +57,7 @@ PGIDS=(null) # process-group ID
 PLATFORMS=(OSMC) # currently emulated platform
 ROMS=(Kodi) # ROM in play
 TARGETS=(null) # systemd service target
-# initialised with Kodi always as the first slot - cuts down on variable arithmetic later
+# initialised with Kodi always as the first slot - cuts down on array index arithmetic later
 
 FIFO=/tmp/app-switcher.fifo
 
@@ -43,6 +66,14 @@ FIFO=/tmp/app-switcher.fifo
 #########################
 # EXECUTION BEGINS HERE #
 #########################
+
+# handle SIGTERM from a shutdown/restart of the service by systemd
+trap cleanUp 15
+
+# hide pulseaudio from Kodi at boot time  (precautionary as cleanup should have taken care of this at previous shutdown/restart)
+if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
+  sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+fi
 
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
@@ -203,12 +234,7 @@ while true; do
 
     elif [[ "$MODE" == "delete" ]]; then
       ACTIVE_SESSION="${opts[1]}"
-      systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
-      cutArray $ACTIVE_SESSION FBSET
-      cutArray $ACTIVE_SESSION PGIDS
-      cutArray $ACTIVE_SESSION PLATFORMS
-      cutArray $ACTIVE_SESSION ROMS
-      cutArray $ACTIVE_SESSION TARGETS
+      rmSession $ACTIVE_SESSION
 
     elif [[ "$MODE" == "switch" ]]; then
       DESTINATION="${opts[1]}" # es = emulationstation, mc = mediacenter
@@ -240,6 +266,9 @@ while true; do
         fi
 
         # re-enable ALSA sink on the PA server
+        if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
+          sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
+        fi
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
 
         # start a new session or...
@@ -311,8 +340,11 @@ while true; do
         # restore the framebuffer geometry for Kodi
         fbset -g ${FBSET[$ACTIVE_SESSION]}
 
-        # disconnects emulators from the audio device to avoid blocking Kodi from it
+        # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
+        if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
+          sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+        fi
 
         # exit methods no longer required
         systemctl stop cec-exit
