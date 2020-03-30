@@ -19,7 +19,7 @@ strindex() {
 
 
 #Resolution and aspectratio
-function resulution(){
+function resolution(){
 	case $1 in
 		480p)           X=720 	Y=480  	aspect="4:3"	vm=2		cs=27		hz=60	;;
 		720p)           X=1280 	Y=720	aspect="16:9"	vm=4		cs=74		hz=60	;;
@@ -53,7 +53,7 @@ function intpro(){
 case $1 in
 
 	-s)
-		vicm=$(resulution $pref2)
+		vicm=$(resolution $pref2)
 		IFS=',' arr=(${vicm})
 		IFS=$OLDIFS
 		tvline="state 0x120009 [HDMI CEA (${arr[0]}) RGB lim ${arr[1]}], "${arr[2]}"x"${arr[3]}" @ ${arr[4]}.00Hz, $(intpro $pref2)"
@@ -70,7 +70,7 @@ case $1 in
 				for item in $dispcap
 				do
 					counter=`expr $counter + 1`
-					infoloop=$(resulution $item)
+					infoloop=$(resolution $item)
 					IFS=',' info=(${infoloop})
 					IFS=$OLDIFS
 					modeline[$counter]="mode ${info[0]}: ${info[2]}x${info[3]} @ ${info[4]}Hz ${info[1]}, clock:${info[5]}MHz $(intpro $item)"
