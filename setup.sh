@@ -224,7 +224,7 @@ function patchRetroPie() {
   cat resources/updatescript_setup.sh >> submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
 
   # PATCH 2
-  # use tvservice-shim and fbset-shim instead of the real thing
+  # use tvservice-shim and fbset-shim instead of the real thing and handle TTY selection
   if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
     # installed version patched in place
     # needs a fresh copy to work on, before we patch the original resource file
@@ -253,6 +253,12 @@ function patchRetroPie() {
   # fix 4k/4K+ platform identification under new and old kernels
   sed -i 's/Vero4K|Vero4KPlus/*Vero*4K*/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
+  # PATCH 5
+  # provide wrapper for retropie_packages.sh to chvt to current session
+  mv submodule/RetroPie-Setup/retropie_packages.{sh,hidden}
+  cp resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
+
+  # END OF PATCHING
   # must update SDL2 as they may be using a stale version without the custom patches
   # but we defer it until after we've patched the RetroPie install otherwise it'll fail to download our version
   clear

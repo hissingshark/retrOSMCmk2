@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "tty" > /tmp/app-switcher.fifo
+sleep 0.1
+RC_TTY=$(cat /tmp/app-switcher.fifo)
+sudo chvt $RC_TTY
+
+/home/osmc/retrOSMCmk2/submodule/RetroPie-Setup/retropie_packages.hidden "$@"
