@@ -289,7 +289,10 @@ while true; do
           ACTIVE_SESSION=${#PGIDS[@]}
           # find next available target number to start the service unit
           for ((tgt=1; tgt>0; tgt++)); do
-            if [[ ! ${TARGETS[@]} =~ $tgt ]]; then
+            # but ignoring 5 as TTY5 is in use - ? by OSMC update
+            if [[ "$tgt" == 5 ]]; then
+              continue
+            elif [[ ! ${TARGETS[@]} =~ $tgt ]]; then
               TARGETS+=($tgt)
               tgt=-1
             fi
