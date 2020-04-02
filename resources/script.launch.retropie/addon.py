@@ -208,8 +208,9 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def deleteSlot(self):
       global SWITCHER_FIFO
       os.system('echo "delete %d" > %s' % (self.slot, SWITCHER_FIFO))
+      global target_slot
+      target_slot = -2
       self.parent.close()
-      # TODO trigger redraw somehow?
 
   class settingsAction():
     def __init__(self, parent):
@@ -218,7 +219,6 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def openSettings(self):
       self.parent.close()
       xbmc.executebuiltin("Addon.openSettings(script.launch.retropie)")
-
 
 
 #
@@ -300,28 +300,34 @@ else:
 
 
   if (fast_switching == "true"):
-    # get currently active slots from app-switcher via FIFO
-    os.system('echo "dump" > %s' % (SWITCHER_FIFO))
-    time.sleep(0.1) # don't want to read our own request from the FIFO!
-    msg = read_FIFO(SWITCHER_FIFO)
-
-    # should have received ":" seperated paired list of labels, with num of pairs as first element
-    labels = msg.split(':')
-    slots = int(labels.pop(0))
-    size = len(labels)
-
-    if (slots != size / 2) or (size % 2 != 0):
-      exit() # corrupt data received
-
     # disable Estuary-based design explicitly
     pyxbmct.skin.estuary = False # go retro - obviously!
 
-    # display session manager
-    target_slot = -1
-    if __name__ == '__main__':
-      window = slotManager('retrOSMCmk2 - Session Manager')
-      window.doModal()
-      del window
+    while True:
+      # get currently active slots from app-switcher via FIFO
+      os.system('echo "dump" > %s' % (SWITCHER_FIFO))
+      time.sleep(0.1) # don't want to read our own request from the FIFO!
+      msg = read_FIFO(SWITCHER_FIFO)
+
+      # should have received ":" seperated paired list of labels, with num of pairs as first element
+      labels = msg.split(':')
+      slots = int(labels.pop(0))
+      size = len(labels)
+
+      if (slots != size / 2) or (size % 2 != 0):
+        exit() # corrupt data received
+
+      # display session manager
+      target_slot = -1
+      if __name__ == '__main__':
+        window = slotManager('retrOSMCmk2 - Session Manager')
+        window.doModal()
+        del window
+        # effectively refresh the screen after deleting a session slot (-2)
+        if target_slot == -2:
+          time.sleep(0.1) # wait for app-switcher to update tables
+        else:
+          break
 
   else:
     target_slot = 0
