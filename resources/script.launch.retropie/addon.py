@@ -102,6 +102,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     self.select_action = []
     self.delete_action = []
     self.new_slot_action = self.selectAction(self, 0)
+    self.settings_action = self.settingsAction(self)
 
     self.draw_slot_menu()
     self.map_menu_nav()
@@ -132,6 +133,10 @@ class slotManager(pyxbmct.AddonDialogWindow):
       self.new_btn = pyxbmct.Button('Start New Session', alignment=pyxbmct.ALIGN_CENTER)
       self.placeControl(self.new_btn, new_row, 4, 1, 2)
       self.connect(self.new_btn, self.new_slot_action.setTargetSlot)
+    # and a settings button in the bottom left corner, only unavailalbe if 9 slots are used - unlikely
+      self.settings_btn = pyxbmct.Button('Settings', alignment=pyxbmct.ALIGN_CENTER)
+      self.placeControl(self.settings_btn, 8, 0, 1, 1)
+      self.connect(self.settings_btn, self.settings_action.openSettings)
 
   def map_menu_nav(self):
     # slot left/right navigation between select and delete columns
@@ -172,6 +177,12 @@ class slotManager(pyxbmct.AddonDialogWindow):
       self.del_btn[0].controlUp(self.del_btn[slots-1])
       self.del_btn[slots-1].controlDown(self.del_btn[0])
 
+    # "Settings" button exists (because "Start New Session" does)
+    if slots < MAX_SLOTS:
+      self.new_btn.controlLeft(self.settings_btn)
+      self.settings_btn.setNavigation(self.new_btn,self.new_btn,self.new_btn,self.new_btn)
+
+
     # Set initial focus
     if slots > 0:
       self.setFocus(self.slot_btn[0])
@@ -199,6 +210,15 @@ class slotManager(pyxbmct.AddonDialogWindow):
       os.system('echo "delete %d" > %s' % (self.slot, SWITCHER_FIFO))
       self.parent.close()
       # TODO trigger redraw somehow?
+
+  class settingsAction():
+    def __init__(self, parent):
+      self.parent = parent
+
+    def openSettings(self):
+      self.parent.close()
+      xbmc.executebuiltin("Addon.openSettings(script.launch.retropie)")
+
 
 
 #
