@@ -237,67 +237,69 @@ EVDEV_FIFO="/tmp/evdev-exit.fifo"
 SWITCHER_FIFO="/tmp/app-switcher.fifo"
 MAX_SLOTS=9
 
-# init dialog handle for all popups
-dialog = xbmcgui.Dialog()
-cecc_proc = ""
-cecc_iter = ""
+# load data file/tree
+try: # read in the settings file
+  settings_file = ET.parse(DATA)
+  settings = settings_file.getroot()
+  keycode = settings.find("keycode").text
+  keydesc = settings.find("keydesc").text
+  gamepad = settings.find("gamepad").text
+  hotbtncode = settings.find("hotbtncode").text
+  exitbtncode = settings.find("exitbtncode").text
+except (IOError, AttributeError): # no file or corrupt
+  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGNOTICE)
+  # create temporary default tree
+  keycode = "No keycode set yet!"
+  keydesc = "Use the \"Program exit key\" option above."
+  gamepad = "Setup still required:"
+  hotbtncode = "No button code set yet!"
+  exitbtncode = "Use the \"Program exit key\" option above."
+  settings = ET.Element("settings")
+  ET.SubElement(settings, "keycode").text = keycode
+  ET.SubElement(settings, "keydesc").text = keydesc
+  ET.SubElement(settings, "gamepad").text = gamepad
+  ET.SubElement(settings, "hotbtncode").text = hotbtncode
+  ET.SubElement(settings, "exitbtncode").text = exitbtncode
+
+# load addon settings
+# set defaults
+cec_exit = "false"
+evdev_exit = "false"
+kodi_signals = "false"
+fast_switching = "false"
+fix_4k = "false"
+
+try:
+  settings_file = ET.parse(SETTINGS)
+  settings = settings_file.getroot()
+  for setting in settings:
+    if setting.get("id") == "cec-exit":
+      cec_exit = setting.text
+    elif setting.get("id") == "evdev-exit":
+      evdev_exit = setting.text
+    elif setting.get("id") == "kodi-signals":
+      kodi_signals = setting.text
+    elif setting.get("id") == "fast-switching":
+      fast_switching = setting.text
+    elif setting.get("id") == "4k-fix":
+      fix_4k = setting.text
+except (IOError, AttributeError): # no file or corrupt so leave blank
+  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGNOTICE)
+
 
 # check an arg was actually passed to the script so it's all addon settings-page related
+# differentiates from a launch situation
 if len(sys.argv) > 1:
   MODE = sys.argv[1]
   INPUTTYPE = sys.argv[2]
 
-  # load data file/tree
-  try: # read in the settings file
-    settings_file = ET.parse(DATA)
-    settings = settings_file.getroot()
-    keycode = settings.find("keycode").text
-    keydesc = settings.find("keydesc").text
-    gamepad = settings.find("gamepad").text
-    hotbtncode = settings.find("hotbtncode").text
-    exitbtncode = settings.find("exitbtncode").text
-  except (IOError, AttributeError): # no file or corrupt
-    xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGNOTICE)
-    # create temporary default tree
-    keycode = "No keycode set yet!"
-    keydesc = "Use the \"Program exit key\" option above."
-    gamepad = "Setup still required:"
-    hotbtncode = "No button code set yet!"
-    exitbtncode = "Use the \"Program exit key\" option above."
-    settings = ET.Element("settings")
-    ET.SubElement(settings, "keycode").text = keycode
-    ET.SubElement(settings, "keydesc").text = keydesc
-    ET.SubElement(settings, "gamepad").text = gamepad
-    ET.SubElement(settings, "hotbtncode").text = hotbtncode
-    ET.SubElement(settings, "exitbtncode").text = exitbtncode
-
+  # init dialog handle for all settings related popups
+  dialog = xbmcgui.Dialog()
+  cecc_proc = ""
+  cecc_iter = ""
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
-  # load addon settings
-  cec_exit = "false"
-  evdev_exit = "false"
-  kodi_signals = "false"
-  fast_switching = "false"
-  fix_4k = "false"
-
-  try:
-    settings_file = ET.parse(SETTINGS)
-    settings = settings_file.getroot()
-    for setting in settings:
-      if setting.get("id") == "cec-exit":
-        cec_exit = setting.text
-      elif setting.get("id") == "evdev-exit":
-        evdev_exit = setting.text
-      elif setting.get("id") == "kodi-signals":
-        kodi_signals = setting.text
-      elif setting.get("id") == "fast-switching":
-        fast_switching = setting.text
-      elif setting.get("id") == "4k-fix":
-        fix_4k = setting.text
-  except (IOError, AttributeError): # no file or corrupt so leave blank
-    xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGNOTICE)
-
 
   if (fast_switching == "true"):
     # disable Estuary-based design explicitly
@@ -356,7 +358,8 @@ else:
   exit()
   # RetroPie launched - we are gone
 
-# otherwise parse arguments for required mode in settings page
+# if we are here then it wasn't a launch, but a request from the settings menu
+# parse arguments for required mode
 if INPUTTYPE == "CEC":
   if MODE == "PROGRAM":
     dialog.ok("Program Exit Key", "1. Press OK\n\n2. Repeatedly press the button on your TV remote that you want to exit RetroPie.")
