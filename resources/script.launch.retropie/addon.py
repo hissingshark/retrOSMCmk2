@@ -241,25 +241,42 @@ MAX_SLOTS=9
 try: # read in the settings file
   settings_file = ET.parse(DATA)
   settings = settings_file.getroot()
-  keycode = settings.find("keycode").text
-  keydesc = settings.find("keydesc").text
-  gamepad = settings.find("gamepad").text
-  hotbtncode = settings.find("hotbtncode").text
-  exitbtncode = settings.find("exitbtncode").text
 except (IOError, AttributeError): # no file or corrupt
   xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGNOTICE)
   # create temporary default tree
-  keycode = "No keycode set yet!"
-  keydesc = "Use the \"Program exit key\" option above."
-  gamepad = "Setup still required:"
-  hotbtncode = "No button code set yet!"
-  exitbtncode = "Use the \"Program exit key\" option above."
   settings = ET.Element("settings")
+
+# parse the elements, defaulting and repairing if missing
+try:
+  keycode = settings.find("keycode").text
+except (AttributeError): # missing element
+  keycode = "No keycode set yet!"
   ET.SubElement(settings, "keycode").text = keycode
+try:
+  keydesc = settings.find("keydesc").text
+except (AttributeError):
+  keydesc = "Use the \"Program exit key\" option above."
   ET.SubElement(settings, "keydesc").text = keydesc
+try:
+  gamepad = settings.find("gamepad").text
+except (AttributeError):
+  gamepad = "Setup still required:"
   ET.SubElement(settings, "gamepad").text = gamepad
+try:
+  hotbtncode = settings.find("hotbtncode").text
+except (AttributeError):
+  hotbtncode = "No button code set yet!"
   ET.SubElement(settings, "hotbtncode").text = hotbtncode
+try:
+  exitbtncode = settings.find("exitbtncode").text
+except (AttributeError):
+  exitbtncode = "Use the \"Program exit key\" option above."
   ET.SubElement(settings, "exitbtncode").text = exitbtncode
+try:
+  resolution = settings.find("resolution").text
+except (AttributeError):
+  resolution = "null"
+  ET.SubElement(settings, "resolution").text = resolution
 
 # load addon settings
 # set defaults
@@ -300,7 +317,6 @@ if len(sys.argv) > 1:
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
-
   if (fast_switching == "true"):
     # disable Estuary-based design explicitly
     pyxbmct.skin.estuary = False # go retro - obviously!
