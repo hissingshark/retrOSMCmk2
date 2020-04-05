@@ -238,45 +238,40 @@ SWITCHER_FIFO="/tmp/app-switcher.fifo"
 MAX_SLOTS=9
 
 # load data file/tree
-try: # read in the settings file
-  settings_file = ET.parse(DATA)
-  settings = settings_file.getroot()
+try: # read in the data file
+  data_file = ET.parse(DATA)
+  data = data_file.getroot()
 except (IOError, AttributeError): # no file or corrupt
   xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGNOTICE)
   # create temporary default tree
-  settings = ET.Element("settings")
+  data = ET.Element("data")
 
 # parse the elements, defaulting and repairing if missing
 try:
-  keycode = settings.find("keycode").text
+  keycode = data.find("keycode").text
 except (AttributeError): # missing element
   keycode = "No keycode set yet!"
-  ET.SubElement(settings, "keycode").text = keycode
+  ET.SubElement(data, "keycode").text = keycode
 try:
-  keydesc = settings.find("keydesc").text
+  keydesc = data.find("keydesc").text
 except (AttributeError):
   keydesc = "Use the \"Program exit key\" option above."
-  ET.SubElement(settings, "keydesc").text = keydesc
+  ET.SubElement(data, "keydesc").text = keydesc
 try:
-  gamepad = settings.find("gamepad").text
+  gamepad = data.find("gamepad").text
 except (AttributeError):
   gamepad = "Setup still required:"
-  ET.SubElement(settings, "gamepad").text = gamepad
+  ET.SubElement(data, "gamepad").text = gamepad
 try:
-  hotbtncode = settings.find("hotbtncode").text
+  hotbtncode = data.find("hotbtncode").text
 except (AttributeError):
   hotbtncode = "No button code set yet!"
-  ET.SubElement(settings, "hotbtncode").text = hotbtncode
+  ET.SubElement(data, "hotbtncode").text = hotbtncode
 try:
-  exitbtncode = settings.find("exitbtncode").text
+  exitbtncode = data.find("exitbtncode").text
 except (AttributeError):
   exitbtncode = "Use the \"Program exit key\" option above."
-  ET.SubElement(settings, "exitbtncode").text = exitbtncode
-try:
-  resolution = settings.find("resolution").text
-except (AttributeError):
-  resolution = "null"
-  ET.SubElement(settings, "resolution").text = resolution
+  ET.SubElement(data, "exitbtncode").text = exitbtncode
 
 # load addon settings
 # set defaults
@@ -392,9 +387,9 @@ if INPUTTYPE == "CEC":
     keydesc = cec_client("DESC")
 
     # write out addon data.xml
-    settings.find("keycode").text = keycode
-    settings.find("keydesc").text = keydesc
-    xmlstr = ET.tostring(settings).decode()
+    data.find("keycode").text = keycode
+    data.find("keydesc").text = keydesc
+    xmlstr = ET.tostring(data).decode()
     newxml = MD.parseString(xmlstr)
     with open(DATA,"w+") as outfile:
         outfile.write(newxml.toprettyxml(indent="",newl=""))
@@ -469,10 +464,10 @@ elif INPUTTYPE == "EVDEV":
       exit()
 
     # write out addon data.xml
-    settings.find("gamepad").text = gamepad
-    settings.find("hotbtncode").text = hotbtncode
-    settings.find("exitbtncode").text = exitbtncode
-    xmlstr = ET.tostring(settings).decode()
+    data.find("gamepad").text = gamepad
+    data.find("hotbtncode").text = hotbtncode
+    data.find("exitbtncode").text = exitbtncode
+    xmlstr = ET.tostring(data).decode()
     newxml = MD.parseString(xmlstr)
     with open(DATA,"w+") as outfile:
         outfile.write(newxml.toprettyxml(indent="",newl=""))
