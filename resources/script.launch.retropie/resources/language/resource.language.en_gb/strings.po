@@ -93,14 +93,17 @@ msgid "Block CEC signals"
 msgstr ""
 
 msgctxt "#32005"
-msgid "4K TV Fix"
+msgid "TV Mode"
 msgstr ""
 
 msgctxt "#32050"
-msgid "Some 4K TVs give a scrambled or flickering picture at launch\n - only use this if you have the problem or you'll induce the same!"
+msgid "Some TVs give a scrambled or flickering picture at launch\n - only use this if you have the problem or you'll induce the same!"
 msgstr ""
 
 msgctxt "#32051"
-msgid "Switch resolution at launch"
+msgid "Switch mode at launch"
 msgstr ""
 
+msgctxt "#32052"
+msgid "Select launch mode"
+msgstr ""

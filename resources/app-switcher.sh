@@ -25,7 +25,7 @@ function cutArray() {
 # deletes a session and its data
 function rmSession() {
       systemctl stop emulationstation@${TARGETS[$1]}.service
-      cutArray $1 FBSET
+      cutArray $1 CEA
       cutArray $1 PGIDS
       cutArray $1 PLATFORMS
       cutArray $1 ROMS
@@ -46,13 +46,29 @@ function cleanUp() {
   exit
 }
 
+
+# returns the index of the current CEA TV mode
+function getMode() {
+  echo $($TVSERVICE -s) | sed 's/.* (\(.*\)) .*/\1/'
+}
+
+
+# sets the CEA TV mode
+function setMode() {
+  # only if different, else it can lose signal to TV
+  if [[ "$(getMode)" != "$1" ]]; then
+    $TVSERVICE -e "CEA $1"
+  fi
+}
+
+
 ##############
 #  VARIABLES #
 ##############
 
 ACTIVE_SESSION=0 # active session slot (not an index as 0 is Kodi)
 # list of each session's...
-FBSET=(null) # framebuffer geometry
+CEA=(null) # CEA mode for TVService to switch mode and framebuffer geometry
 PGIDS=(null) # process-group ID
 PLATFORMS=(OSMC) # currently emulated platform
 ROMS=(Kodi) # ROM in play
@@ -60,7 +76,7 @@ TARGETS=(null) # systemd service target
 # initialised with Kodi always as the first slot - cuts down on array index arithmetic later
 
 FIFO=/tmp/app-switcher.fifo
-
+TVSERVICE=/home/osmc/RetroPie/scripts/tvservice-shim.sh
 
 
 #########################
@@ -240,12 +256,12 @@ while true; do
       DESTINATION="${opts[1]}" # es = emulationstation, mc = mediacenter
       SPEED="${opts[2]}" # fast or slow
       REQUESTED_SESSION="${opts[3]}" # requested session to rejoin
-      4KFIX="${opts[4]}" # true or false - some 4K TVs suffer flickering, distortion etc
+      TV_MODE="${opts[4]}" # user selected CEA mode - otherwise some 4K TVs suffer flickering, distortion etc
 
 
       if [[ "$DESTINATION" == "es" ]]; then
         # backup the Kodi framebuffer geometry
-        FBSET[0]=$(fbset | grep geometry | sed 's/^.*geometry //')
+        CEA[0]=$(getMode)
 
         # shutdown or halt Kodi processes
         if [[ "$SPEED" == "slow" ]]; then
@@ -273,15 +289,6 @@ while true; do
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
-          # set an almost universally acceptable default framebuffer geometry
-          # TODO make this user selectable in addon settings for odd TV and monitor cases as "4K Fix" - they also need the mode setting though
-          if [[ "$4KFIX" == "true" ]]; then
-            echo '1080p50hz' > /sys/class/display/mode
-            fbset -g 1920 1080 1920 2160 32
-          else
-            fbset -g 1920 1080 1920 2160 32
-          fi
-
           # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
           sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
 
@@ -297,6 +304,12 @@ while true; do
               tgt=-1
             fi
           done
+
+          # set user selected TV mode before first use of the new TTY
+          if [[ "$TV_MODE" > 0 ]]; then
+            setMode $TV_MODE
+          fi
+
           systemctl start emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
           sleep 2
 
@@ -304,7 +317,7 @@ while true; do
           for PGID in $(ps xao pgid,comm | grep "emulationstatio" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' '); do
             # append the newest one as the active session
             if [[ ! "${PGIDS[@]}" =~ "$PGID" ]]; then
-              FBSET+=(null) # to be confirmed when switching out
+              CEA+=(null) # to be confirmed when switching out
               PGIDS+=($PGID)
               PLATFORMS+=("EmulationStation")
               ROMS+=("N/A")
@@ -314,8 +327,8 @@ while true; do
         # ...or continue selected halted processes
         else
           ACTIVE_SESSION=$REQUESTED_SESSION
-          # set framebuffer geometry from previous visit to session
-          fbset -g ${FBSET[$REQUESTED_SESSION]}
+          # set TV mode from previous visit to session
+          setMode ${CEA[$REQUESTED_SESSION]}
           # minimise any audio crackle on resuming PA
           sleep 0.5
           sudo kill -CONT "-${PGIDS[$REQUESTED_SESSION]}"
@@ -324,14 +337,14 @@ while true; do
       elif [[ "$DESTINATION" == "mc" ]]; then
         if [[ "$SPEED" == "slow" ]]; then
           systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
-          cutArray $ACTIVE_SESSION FBSET
+          cutArray $ACTIVE_SESSION CEA
           cutArray $ACTIVE_SESSION PGIDS
           cutArray $ACTIVE_SESSION PLATFORMS
           cutArray $ACTIVE_SESSION ROMS
           cutArray $ACTIVE_SESSION TARGETS
         elif [[ "$SPEED" == "fast" ]]; then
-          # store framebuffer geometry of the outgoing session
-          FBSET[$ACTIVE_SESSION]=$(fbset | grep geometry | sed 's/^.*geometry //')
+          # store TV mode of the outgoing session
+          CEA[$ACTIVE_SESSION]=$(getMode)
           # halt session
           sudo kill -STOP "-${PGIDS[$ACTIVE_SESSION]}"
           # restore the console binding for Kodi
@@ -340,8 +353,8 @@ while true; do
           continue
         fi
         ACTIVE_SESSION=0
-        # restore the framebuffer geometry for Kodi
-        fbset -g ${FBSET[$ACTIVE_SESSION]}
+        # restore the TV mode for Kodi
+        setMode ${CEA[$ACTIVE_SESSION]}
 
         # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1

@@ -92,10 +92,10 @@ case $1 in
 		else 
 			if [[ "$2" =~ "PAL" ]]; then
 				sudo sh -c 'echo 576p50hz > /sys/class/display/mode'
-				fbset -g 720 576 720 1152 32
+				fbset -a -g 720 576 720 1152 32
 			elif [[ "$2" =~ "NTSC" ]]; then
 				sudo sh -c 'echo 480p60hz > /sys/class/display/mode'
-				fbset -g 720 480 720 960 32
+				fbset -a -g 720 480 720 960 32
 			else
 				echo "Not cointaing right information, set PAL or NTSC"
 			fi
@@ -109,55 +109,55 @@ case $1 in
 			case $2 in
 				"CEA 2")
 					sudo sh -c 'echo 480p60hz > /sys/class/display/mode'
-					fbset -g 720 480 720 960 32
+					fbset -a -g 720 480 720 960 32
 				;;
 		                "CEA 4")
 					sudo sh -c 'echo 720p60hz > /sys/class/display/mode'
-					fbset -g 1280 720 1280 1440 32
+					fbset -a -g 1280 720 1280 1440 32
                 		;;
                 		"CEA 5")
 					sudo sh -c 'echo 1080i60hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
 		                ;;
 				"CEA 6")
 					sudo sh -c 'echo 480i60hz > /sys/class/display/mode'
-					fbset -g 1440 480 1440 960 32
+					fbset -a -g 1440 480 1440 960 32
 		                ;;
                 		"CEA 16")
                     			sudo sh -c 'echo 1080p60hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 17")
                     			sudo sh -c 'echo 576p50hz > /sys/class/display/mode'
-					fbset -g 720 576 720 1152 32
+					fbset -a -g 720 576 720 1152 32
 		                ;;
                 		"CEA 19")
                     			sudo sh -c 'echo 720p50hz > /sys/class/display/mode'
-					fbset -g 1280 720 1280 1440 32
+					fbset -a -g 1280 720 1280 1440 32
 		                ;;
 				"CEA 21")
                     			sudo sh -c 'echo 576i50hz > /sys/class/display/mode'
-					fbset -g 1440 576 1440 1152 32
+					fbset -a -g 1440 576 1440 1152 32
 		                ;;
                 		"CEA 31")
                     			sudo sh -c 'echo 1080p50hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 32")
                     			sudo sh -c 'echo 1080p24hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
                 		;;
                 		"CEA 33")
                     			sudo sh -c 'echo 1080p25hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
 		                ;;
                 		"CEA 34")
                     			sudo sh -c 'echo 1080p30hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
                 		;;
                 		"CEA 40")
                     			sudo sh -c 'echo 1080i50hz > /sys/class/display/mode'
-					fbset -g 1920 1080 1920 2160 32
+					fbset -a -g 1920 1080 1920 2160 32
 		                ;;
 				*)
 					echo "Not a valid mode"

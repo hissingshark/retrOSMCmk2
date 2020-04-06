@@ -228,6 +228,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
 # init constant paths
 CLIENT="/usr/osmc/bin/cec-client"
 EVHELPER="/home/osmc/RetroPie/scripts/evdev-helper.sh"
+TVSERVICE="/home/osmc/RetroPie/scripts/tvservice-shim.sh"
 DATA="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/data.xml"
 HIDDEN="/home/osmc/.kodi/userdata/keymaps/remote.xml.hidden"
 HOBBLE="/home/osmc/.kodi/addons/script.launch.retropie/resources/data/hobble.xml"
@@ -272,6 +273,11 @@ try:
 except (AttributeError):
   exitbtncode = "Use the \"Program exit key\" option above."
   ET.SubElement(data, "exitbtncode").text = exitbtncode
+try:
+  resolution = data.find("resolution").text
+except (AttributeError):
+  resolution = "0"
+  ET.SubElement(data, "resolution").text = resolution
 
 # load addon settings
 # set defaults
@@ -279,7 +285,7 @@ cec_exit = "false"
 evdev_exit = "false"
 kodi_signals = "false"
 fast_switching = "false"
-fix_4k = "false"
+tv_mode = "false"
 
 try:
   settings_file = ET.parse(SETTINGS)
@@ -293,8 +299,8 @@ try:
       kodi_signals = setting.text
     elif setting.get("id") == "fast-switching":
       fast_switching = setting.text
-    elif setting.get("id") == "4k-fix":
-      fix_4k = setting.text
+    elif setting.get("id") == "tv-mode":
+      tv_mode = setting.text
 except (IOError, AttributeError): # no file or corrupt so leave blank
   xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGNOTICE)
 
@@ -360,11 +366,15 @@ else:
   if evdev_exit == "true":
     os.system('systemctl start evdev-exit')
 
+  # switch TV mode at launch?
+  if (tv_mode == "false"):
+    resolution = 0
+
   # launch Emulationstation +/- fast switching which is needed to block CEC shutdown signals too
   if (kodi_signals == "true" or fast_switching == "true"):
-    os.system('echo "switch es fast %s %s" >/tmp/app-switcher.fifo' % (target_slot, fix_4k))
+    os.system('echo "switch es fast %s %s" >/tmp/app-switcher.fifo' % (target_slot, resolution))
   else:
-    os.system('echo "switch es slow 0 %s" >/tmp/app-switcher.fifo' % (fix_4k))
+    os.system('echo "switch es slow 0 %s" >/tmp/app-switcher.fifo' % (resolution))
 
   exit()
   # RetroPie launched - we are gone
@@ -426,7 +436,7 @@ if INPUTTYPE == "CEC":
       dialog.ok("CEC-client", msg)
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad argument for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
 elif INPUTTYPE == "EVDEV":
   # helper will automatically grab the device when testing to avoid a clash with Kodi - no jammer needed here
@@ -495,8 +505,68 @@ elif INPUTTYPE == "EVDEV":
         dialog.ok("Test Exit Buttons", "Exit combination was not detected!")
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad argument for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+
+elif INPUTTYPE == "RES":
+  if MODE == "PROGRAM":
+    # obtain current video mode number
+    tvs_proc = subprocess.Popen([TVSERVICE, "-s"], stdout=subprocess.PIPE)
+    so, se = tvs_proc.communicate()
+    current_mode = so.split('(', 1)[1].split(')')[0]
+    chosen_mode = resolution # from config
+
+    # obtain available modes
+    mode_refs = []
+    tvs_proc = subprocess.Popen([TVSERVICE, "-m","CEA"], stdout=subprocess.PIPE)
+    so, se = tvs_proc.communicate()
+    # newline seperated list
+    available_modes = so.split("\n")
+    # remove first title line and last blank line
+    available_modes.pop(0)
+    available_modes.pop(len(available_modes)-1)
+    # for each mode line
+    for line in range(0, len(available_modes)-1):
+      # extract and store mode number
+      mode = available_modes[line].split('mode ', 1)[1].split(':')[0]
+      mode_refs.append(mode)
+      # then  mark the active and selected
+      if mode == chosen_mode:
+        available_modes[line] = available_modes[line] + "  <- SELECTED"
+      elif mode == current_mode:
+        available_modes[line] = available_modes[line] + "  <- ACTIVE"
+      # remove leading "mode n: "
+      available_modes[line] = available_modes[line].split(": ")[1]
+
+    # present list for user to select
+    chosen_mode = dialog.select("Select TV mode for launch", available_modes)
+    xbmc.log(str(chosen_mode), level=xbmc.LOGNOTICE)
+    # exit if nothing selected
+    if chosen_mode == -1:
+      exit()
+
+    # test mode for 5s
+    dialog.ok("Mode Test", "The selected mode will now be displayed for 5 seconds just to confirm it works, but the display will likely be zoomed")
+    cmd_str = '%s -e "CEA %s"' % (TVSERVICE, mode_refs[chosen_mode])
+    tvs_proc = subprocess.Popen(cmd_str, universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    time.sleep(7)
+    cmd_str = '%s -e "CEA %s"' % (TVSERVICE, current_mode)
+    tvs_proc = subprocess.Popen(cmd_str, universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+
+    # save config if acceptable
+    keep = dialog.yesno("Mode Test", "Keep that mode for launching Emulationstation?")
+    if keep == True:
+      # write out addon data.xml
+      data.find("resolution").text = mode_refs[chosen_mode]
+# TODO move saving to a generic function
+      xmlstr = ET.tostring(data).decode()
+      newxml = MD.parseString(xmlstr)
+      with open(DATA,"w+") as outfile:
+          outfile.write(newxml.toprettyxml(indent="",newl=""))
+
+  else:
+    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
 else:
-  xbmc.log("ERROR!\n\"%s\" is a bad argument for %s" % (INPUTTYPE, sys.argv[0]), level=xbmc.LOGNOTICE)
+  xbmc.log("ERROR!\n\"%s\" is a bad INPUTTYPE for %s" % (INPUTTYPE, sys.argv[0]), level=xbmc.LOGNOTICE)
+
 #  xbmc.log("DEBUG: ", level=xbmc.LOGNOTICE)
