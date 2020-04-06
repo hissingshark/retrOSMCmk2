@@ -109,6 +109,8 @@ class slotManager(pyxbmct.AddonDialogWindow):
     self.connect(pyxbmct.ACTION_NAV_BACK, self.close)
 
   def draw_slot_menu(self):
+    global popup_button
+
     # draw and configure select and delete buttons for each slot
     row = 0
     while row < slots:
@@ -130,7 +132,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     # draw "new session" button if free space (sits in the centre, spread over 2 cells)
     if slots < MAX_SLOTS:
       new_row = (((MAX_SLOTS - slots) / 2) + slots)
-      self.new_btn = pyxbmct.Button('Start New Session', alignment=pyxbmct.ALIGN_CENTER)
+      self.new_btn = pyxbmct.Button(popup_button, alignment=pyxbmct.ALIGN_CENTER)
       self.placeControl(self.new_btn, new_row, 4, 1, 2)
       self.connect(self.new_btn, self.new_slot_action.setTargetSlot)
     # and a settings button in the bottom left corner, only unavailalbe if 9 slots are used - unlikely
@@ -319,37 +321,41 @@ if len(sys.argv) > 1:
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
   if (fast_switching == "true"):
-    # disable Estuary-based design explicitly
-    pyxbmct.skin.estuary = False # go retro - obviously!
-
-    while True:
-      # get currently active slots from app-switcher via FIFO
-      os.system('echo "dump" > %s' % (SWITCHER_FIFO))
-      time.sleep(0.1) # don't want to read our own request from the FIFO!
-      msg = read_FIFO(SWITCHER_FIFO)
-
-      # should have received ":" seperated paired list of labels, with num of pairs as first element
-      labels = msg.split(':')
-      slots = int(labels.pop(0))
-      size = len(labels)
-
-      if (slots != size / 2) or (size % 2 != 0):
-        exit() # corrupt data received
-
-      # display session manager
-      target_slot = -1
-      if __name__ == '__main__':
-        window = slotManager('retrOSMCmk2 - Session Manager')
-        window.doModal()
-        del window
-        # effectively refresh the screen after deleting a session slot (-2)
-        if target_slot == -2:
-          time.sleep(0.1) # wait for app-switcher to update tables
-        else:
-          break
-
+    popup_title = 'retrOSMCmk2 - Session Manager'
+    popup_button = 'Start New Session'
   else:
-    target_slot = 0
+    popup_title = 'retrOSMCmk2'
+    popup_button = 'Launch!'
+
+  # disable Estuary-based design explicitly
+  pyxbmct.skin.estuary = False # go retro - obviously!
+
+  while True:
+    # get currently active slots from app-switcher via FIFO
+    os.system('echo "dump" > %s' % (SWITCHER_FIFO))
+    time.sleep(0.1) # don't want to read our own request from the FIFO!
+    msg = read_FIFO(SWITCHER_FIFO)
+
+    # should have received ":" seperated paired list of labels, with num of pairs as first element
+    labels = msg.split(':')
+    slots = int(labels.pop(0))
+    size = len(labels)
+
+    if (slots != size / 2) or (size % 2 != 0):
+      exit() # corrupt data received
+
+    # display session manager
+    target_slot = -1
+    if __name__ == '__main__':
+      window = slotManager(popup_title)
+      window.doModal()
+      del window
+      # effectively refresh the screen after deleting a session slot (-2)
+      if target_slot == -2:
+        time.sleep(0.1) # wait for app-switcher to update tables
+      else:
+        break
+
 
   if target_slot == -1:
     exit() # backed out of session manager without choosing anything
