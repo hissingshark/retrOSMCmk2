@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, subprocess, sys
+import os, pwd, subprocess, sys
 from os import path
 import xml.etree.ElementTree as ET
 from subprocess import check_output
@@ -57,6 +57,9 @@ except (IOError, AttributeError):
 # ensure FIFO is in place for evdev-helper comms
 if not path.exists(FIFO_PATH):
   os.mkfifo(FIFO_PATH)
+  uid=(pwd.getpwnam('osmc').pw_uid)
+  gid=(pwd.getpwnam('osmc').pw_gid)
+  os.chown(FIFO_PATH, uid, gid)
 
 subprocess.Popen([EVHELPER, "CATCHCOMBO", "LIVE", gamepad, hotbtncode, exitbtncode])
 msg = monitorFIFO()
