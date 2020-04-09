@@ -215,6 +215,14 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def deleteSlot(self):
       global SWITCHER_FIFO
       os.system('echo "delete %d" > %s' % (self.slot, SWITCHER_FIFO))
+
+      global slots_master
+      slots_master -= 1
+
+      global labels_master
+      labels_master.pop(self.slot * 2 - 2)
+      labels_master.pop(self.slot * 2 - 2)
+
       global target_slot
       target_slot = -2
       self.parent.close()
@@ -327,38 +335,38 @@ if len(sys.argv) > 1:
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
   if (fast_switching == "true"):
-    popup_title = 'retrOSMCmk2 - Session Manager'
     popup_button = 'Start New Session'
   else:
-    popup_title = 'retrOSMCmk2'
     popup_button = 'Launch!'
 
   # disable Estuary-based design explicitly
   pyxbmct.skin.estuary = False # go retro - obviously!
 
+  # get currently active slots from app-switcher via FIFO
+  os.system('echo "dump" > %s' % (SWITCHER_FIFO))
+  time.sleep(0.1) # don't want to read our own request from the FIFO!
+  msg = read_FIFO(SWITCHER_FIFO)
+
+  # should have received ":" seperated paired list of labels, with num of pairs as first element
+  labels_master = msg.split(':')
+  slots_master = int(labels_master.pop(0))
+  size = len(labels_master)
+  if (slots_master != size / 2) or (size % 2 != 0):
+    exit() # corrupt data received
+
   while True:
-    # get currently active slots from app-switcher via FIFO
-    os.system('echo "dump" > %s' % (SWITCHER_FIFO))
-    time.sleep(0.1) # don't want to read our own request from the FIFO!
-    msg = read_FIFO(SWITCHER_FIFO)
-
-    # should have received ":" seperated paired list of labels, with num of pairs as first element
-    labels = msg.split(':')
-    slots = int(labels.pop(0))
-    size = len(labels)
-
-    if (slots != size / 2) or (size % 2 != 0):
-      exit() # corrupt data received
+    labels = labels_master[:]
+    slots = slots_master
 
     # display session manager
     target_slot = -1
     if __name__ == '__main__':
-      window = slotManager(popup_title)
+      window = slotManager("retrOSMCmk2 - Session Manager")
       window.doModal()
       del window
       # effectively refresh the screen after deleting a session slot (-2)
       if target_slot == -2:
-        time.sleep(0.1) # wait for app-switcher to update tables
+        pass
       else:
         break
 
