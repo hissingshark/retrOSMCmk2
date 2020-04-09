@@ -198,9 +198,14 @@ class slotManager(pyxbmct.AddonDialogWindow):
       self.slot = slot
 
     def setTargetSlot(self):
+      global fast_switching
       global target_slot
-      target_slot = self.slot
-      self.parent.close()
+      if (fast_switching == "false" and self.slot > 0):
+        # disable launch of slots in "slow mode"
+        dialog.ok("App-Switching", "Please re-enable \"fast switching\" to access paused slots.")
+      else:
+        target_slot = self.slot
+        self.parent.close()
 
   class deleteAction():
     def __init__(self, parent, slot):
@@ -239,6 +244,12 @@ SETTINGS="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.x
 EVDEV_FIFO="/tmp/evdev-exit.fifo"
 SWITCHER_FIFO="/tmp/app-switcher.fifo"
 MAX_SLOTS=9
+
+# init dialog handle for all settings related popups
+dialog = xbmcgui.Dialog()
+cecc_proc = ""
+cecc_iter = ""
+
 
 # load data file/tree
 try: # read in the data file
@@ -312,11 +323,6 @@ except (IOError, AttributeError): # no file or corrupt so leave blank
 if len(sys.argv) > 1:
   MODE = sys.argv[1]
   INPUTTYPE = sys.argv[2]
-
-  # init dialog handle for all settings related popups
-  dialog = xbmcgui.Dialog()
-  cecc_proc = ""
-  cecc_iter = ""
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
