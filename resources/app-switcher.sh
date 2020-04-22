@@ -53,10 +53,27 @@ function getMode() {
 }
 
 
-# sets the CEA TV mode
+# selectively sets the requested CEA TV mode
 function setMode() {
-  # only if different, else it can lose signal to TV
-  if [[ "$(getMode)" != "$1" ]]; then
+  # get vres of current mode
+  mvr=$($TVSERVICE -s | sed -e 's/ //g' -e 's/^.*x//' -e 's/@.*$//')
+  # get current framebuffer vres
+  fvr=$(fbset | grep x | sed -e 's/^.*x//' -e 's/".*$//')
+
+  # IF mode switching is enabled
+  # AND only if the requested mode is different, else it can lose signal to TV
+  # UNLESS mandatory - the framebuffer geometry reveals the new Kodi setup for 3D - a double image with a 45 pixel seperator
+  if [[ "$(((mvr*2+45)))" != "$fvr" ]]; then # not MANDATORY due to 3D
+    if [[ "$1" == "0" ]]; then # not enabled
+      return
+    elif [[ "$1" == "$(getMode)" ]]; then # mode same as the current one
+      return
+    fi
+  fi
+
+  if [[ "$1" == "0" ]]; then
+    $TVSERVICE -e "CEA $(getMode)"
+  else
     $TVSERVICE -e "CEA $1"
   fi
 }
@@ -306,9 +323,7 @@ while true; do
           done
 
           # set user selected TV mode before first use of the new TTY
-          if [[ "$TV_MODE" > 0 ]]; then
-            setMode $TV_MODE
-          fi
+          setMode $TV_MODE
 
           systemctl start emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
           sleep 2
@@ -355,7 +370,6 @@ while true; do
         ACTIVE_SESSION=0
         # restore the TV mode for Kodi
         setMode ${CEA[$ACTIVE_SESSION]}
-
         # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
         sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
         if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
