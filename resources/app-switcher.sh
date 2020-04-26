@@ -302,7 +302,7 @@ while true; do
         if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
           sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
         fi
-        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 0
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
@@ -371,7 +371,7 @@ while true; do
         # restore the TV mode for Kodi
         setMode ${CEA[$ACTIVE_SESSION]}
         # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
-        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink alsa_output.platform-aml_m8_snd.46.analog-stereo 1
+        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
         if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
           sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
         fi
