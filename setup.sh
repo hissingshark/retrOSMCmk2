@@ -122,7 +122,7 @@ function firstTimeSetup() {
   echo "dump" > $FIFO
   sleep 0.1
   session_count=$(cat $FIFO)
-  if [[ "$session_count" == "0" ]]; then
+  if [[ "$session_count" == "0" || $(systemctl is-active app-switcher) == "inactive" ]]; then
     systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
   else
     session_count=${session_count%%:*} # retrieve 1st value of a : delimited string
