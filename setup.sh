@@ -81,7 +81,11 @@ function firstTimeSetup() {
   # remove any old style scripts first
   rm -f /home/osmc/RetroPie/scripts/launcher.sh
   # copy over all new scripts
-  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  if [[ "$platform" == "vero4k" ]]; then
+    cp resources/{fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  fi
+
   if [[ ! -d /opt/retropie/configs/all/ ]]; then
     mkdir -p /opt/retropie/configs/all/
   fi

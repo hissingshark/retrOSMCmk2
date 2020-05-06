@@ -8,6 +8,25 @@
 # FUNCTIONS #
 #############
 
+# platform tests - adapted from the RetroPie platform detection
+function isRPi() {
+  if [[ "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" == BCM* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+
+function isVero() {
+  if [[ "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" == *Vero*4K* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+
 # takes an index and a reference to an array - removes that element
 function cutArray() {
   local tocut=$1
