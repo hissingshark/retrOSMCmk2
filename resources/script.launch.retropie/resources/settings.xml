@@ -25,8 +25,9 @@
     </category>
     <category label="32005">
         <setting label="32050" type="lsep"/>
-        <setting label="32051" type="bool" id="tv-mode" default="false"/>
-        <setting label="32052" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, PROGRAM, RES)"/>
+        <setting label="32051" visible="!System.Platform.Linux.RaspberryPi" type="bool" id="tv-mode" default="false"/>
+        <setting label="32052" visible="!System.Platform.Linux.RaspberryPi" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, PROGRAM, RES)"/>
+        <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
     </category>
 </settings>
 
