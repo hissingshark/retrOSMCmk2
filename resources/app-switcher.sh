@@ -3,10 +3,30 @@
 # this script switches between Kodi and RetroPie, as instructed over a FIFO
 # slow mode stops and starts services in turn
 # fast mode halts and resumes processes via "kill STOP/CONT"
+# on RPi only slow mode is available - no mode switching is performed and no Pulseaudio operations
 
 #############
 # FUNCTIONS #
 #############
+
+# platform tests - adapted from the RetroPie platform detection
+function isRPi() {
+  if [[ "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" == BCM* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+
+function isVero() {
+  if [[ "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" == *Vero*4K* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 
 # takes an index and a reference to an array - removes that element
 function cutArray() {
@@ -36,7 +56,7 @@ function rmSession() {
 # cleanup in event of a caught SIGTERM
 function cleanUp() {
   if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-    sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+    isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
   fi
 
   for ((slot=1; slot<${#PGIDS[@]}; slot++)); do
@@ -53,8 +73,10 @@ function getMode() {
 }
 
 
-# selectively sets the requested CEA TV mode
+# selectively sets the requested CEA TV mode on Vero only
 function setMode() {
+  isRPi && return
+
   # get vres of current mode
   mvr=$($TVSERVICE -s | sed -e 's/ //g' -e 's/^.*x//' -e 's/@.*$//')
   # get current framebuffer vres
@@ -93,7 +115,11 @@ TARGETS=(null) # systemd service target
 # initialised with Kodi always as the first slot - cuts down on array index arithmetic later
 
 FIFO=/tmp/app-switcher.fifo
-TVSERVICE=/home/osmc/RetroPie/scripts/tvservice-shim.sh
+if isVero; then
+  TVSERVICE=/home/osmc/RetroPie/scripts/tvservice-shim.sh
+else
+  TVSERVICE=/opt/vc/bin/tvservice
+fi
 
 
 #########################
@@ -105,7 +131,7 @@ trap cleanUp 15
 
 # hide pulseaudio from Kodi at boot time  (precautionary as cleanup should have taken care of this at previous shutdown/restart)
 if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-  sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+  isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
 fi
 
 # setup FIFO for communication
@@ -300,14 +326,14 @@ while true; do
 
         # re-enable ALSA sink on the PA server
         if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
-          sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
+          isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
         fi
-        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
+        isVero && sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
           # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
-          sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
+          isVero && sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
 
           # current session slot also the latest
           ACTIVE_SESSION=${#PGIDS[@]}
@@ -371,9 +397,9 @@ while true; do
         # restore the TV mode for Kodi
         setMode ${CEA[$ACTIVE_SESSION]}
         # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
-        sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
+        isVero && sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
         if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-          sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+          isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
         fi
 
         # exit methods no longer required

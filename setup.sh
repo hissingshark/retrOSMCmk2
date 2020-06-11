@@ -81,7 +81,11 @@ function firstTimeSetup() {
   # remove any old style scripts first
   rm -f /home/osmc/RetroPie/scripts/launcher.sh
   # copy over all new scripts
-  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  if [[ "$platform" == "vero4k" ]]; then
+    cp resources/{fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  fi
+
   if [[ ! -d /opt/retropie/configs/all/ ]]; then
     mkdir -p /opt/retropie/configs/all/
   fi
@@ -122,7 +126,7 @@ function firstTimeSetup() {
   echo "dump" > $FIFO
   sleep 0.1
   session_count=$(cat $FIFO)
-  if [[ "$session_count" == "0" ]]; then
+  if [[ "$session_count" == "0" || $(systemctl is-active app-switcher) == "inactive" ]]; then
     systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
   else
     session_count=${session_count%%:*} # retrieve 1st value of a : delimited string
