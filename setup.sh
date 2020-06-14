@@ -260,7 +260,7 @@ function patchRetroPie() {
   # PATCH 5
   # provide wrapper for retropie_packages.sh to chvt to current session
   mv submodule/RetroPie-Setup/retropie_packages.{sh,hidden}
-  cp resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
+  cp -a resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
 
   # END OF PATCHING
   # must update SDL2 as they may be using a stale version without the custom patches
