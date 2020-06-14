@@ -563,6 +563,9 @@ elif INPUTTYPE == "RES":
     # exit if nothing selected
     if chosen_mode == -1:
       exit()
+    # or if the active TV mode selected as trying to set that loses the signal
+    elif mode_refs[chosen_mode] == current_mode:
+      exit()
 
     # test mode for 5s
     dialog.ok("Mode Test", "The selected mode will now be displayed for 5 seconds just to confirm it works, but the display will likely be zoomed")
