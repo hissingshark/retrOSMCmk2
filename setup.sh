@@ -215,8 +215,19 @@ function patchRetroPie() {
   # provide q3lite as RetroPie module
   wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
 
+  # remove EmulationStation from binary blacklist as we provide this on RPi3 and Vero4K
+  sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
+
   # ignore subsequent patches for RPi series
   if [[ "$platform" == "rpi" ]]; then
+    # RetroPie host all RPi3 binaries except for EmulationStation - which we handle
+    sed -i \
+      -e '/function rp_getBinaryUrl() {/,/^}/s/$__binary_url/$osmc_url/' \
+      -e 's/function rp_getBinaryUrl() {/function rp_getBinaryUrl() {\n    if [[ "${__mod_id[$1]}" != "emulationstation" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/stretch\/rpi3"\n    fi/' \
+      -e '/function rp_installBin() {/,/^}/s/$__binary_url/$osmc_url/' \
+      -e 's/function rp_installBin() {/function rp_installBin() {\n    if [[ "$md_id" != "emulationstation" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/stretch\/rpi3"\n    fi/' \
+    packages.sh
+
     return 0
   fi
 
@@ -250,8 +261,6 @@ function patchRetroPie() {
   sed -i '/local ver="$(get_ver_sdl2)+/s/+./+1/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.8"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/https:\/\/github.com\/RetroPie\/SDL-mirror/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-
-  sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
   # PATCH 4
   # fix 4k/4K+ platform identification under new and old kernels
