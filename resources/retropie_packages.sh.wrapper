@@ -1,8 +1,20 @@
 #!/bin/bash
 
-echo "tty" > /tmp/app-switcher.fifo
-sleep 0.1
-RC_TTY=$(cat /tmp/app-switcher.fifo)
-sudo chvt $RC_TTY
+
+# detect running over SSH to avoid switching VT on unsuspected TV user
+SESSION_TYPE='local'
+
+case $(ps -o comm= -p $PPID) in
+  sshd|*/sshd) SESSION_TYPE='ssh';;
+esac
+
+if [[ "$SESSION_TYPE" != "ssh" ]]; then
+  echo "tty" > /tmp/app-switcher.fifo
+  sleep 0.1
+  RC_TTY=$(cat /tmp/app-switcher.fifo)
+  if [[ "$RC_TTY" != "null" ]]; then
+    sudo chvt $RC_TTY
+  fi
+fi
 
 /home/osmc/retrOSMCmk2/submodule/RetroPie-Setup/retropie_packages.hidden "$@"
