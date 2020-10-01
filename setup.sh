@@ -208,8 +208,14 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
+  # PATCH A
   # provide q3lite as RetroPie module
   wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
+
+  # PATCH B
+  # provide our own GPG public key for signed package downloads
+  sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+  sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
   # ignore subsequent patches for RPi series
   if [[ "$platform" == "rpi" ]]; then
