@@ -55,9 +55,7 @@ function rmSession() {
 
 # cleanup in event of a caught SIGTERM
 function cleanUp() {
-  if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-    isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
-  fi
+  pulseAudio hide
 
   for ((slot=1; slot<${#PGIDS[@]}; slot++)); do
     rmSession 1
@@ -101,6 +99,26 @@ function setMode() {
 }
 
 
+# hide PulseAudio from Kodi by swapping the config file with a blank and suspending the ALSA sink - or vice versa
+function pulseAudio {
+  # only applies to Vero's fast switching
+  isVero || return
+
+  if [[ "$1" == "show" ]]; then
+    if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
+      sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
+    fi
+    sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
+  elif [[ "$1" == "hide" ]]; then
+    sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
+    if [[ ! -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
+      sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
+      sudo touch /usr/share/alsa/alsa.conf.d/pulse.conf
+    fi
+  fi
+}
+
+
 ##############
 #  VARIABLES #
 ##############
@@ -130,9 +148,7 @@ fi
 trap cleanUp 15
 
 # hide pulseaudio from Kodi at boot time  (precautionary as cleanup should have taken care of this at previous shutdown/restart)
-if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-  isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
-fi
+pulseAudio hide
 
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
@@ -325,10 +341,7 @@ while true; do
         fi
 
         # re-enable ALSA sink on the PA server
-        if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
-          isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
-        fi
-        isVero && sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
+        pulseAudio show
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
@@ -393,14 +406,14 @@ while true; do
         else
           continue
         fi
+
         ACTIVE_SESSION=0
+
         # restore the TV mode for Kodi
         setMode ${CEA[$ACTIVE_SESSION]}
-        # disconnects emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
-        isVero && sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
-        if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf" ]]; then
-          isVero && sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
-        fi
+
+        # disconnect emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
+        pulseAudio hide
 
         # exit methods no longer required
         systemctl stop cec-exit
