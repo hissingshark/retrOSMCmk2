@@ -265,8 +265,8 @@ function patchRetroPie() {
   sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
   sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-  sed -i '/local ver="$(get_ver_sdl2)+/s/+./+1/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-  sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.8"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/local ver="$(get_ver_sdl2)+/s/+./+5/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/https:\/\/github.com\/RetroPie\/SDL-mirror/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
   # PATCH 4
