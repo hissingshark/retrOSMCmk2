@@ -108,9 +108,11 @@ function pulseAudio {
     if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
       sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
     fi
+    sudo sed -i '/autospawn=/s/^.*$/autospawn=yes/' /etc/pulse/client.conf.d/00-disable-autospawn.conf
     sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
   elif [[ "$1" == "hide" ]]; then
     sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
+    sudo sed -i '/autospawn=/s/^.*$/autospawn=no/' /etc/pulse/client.conf.d/00-disable-autospawn.conf
     if [[ ! -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
       sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
       sudo touch /usr/share/alsa/alsa.conf.d/pulse.conf
