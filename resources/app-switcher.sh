@@ -327,7 +327,7 @@ while true; do
         # shutdown or halt Kodi processes
         if [[ "$SPEED" == "slow" ]]; then
           systemctl stop mediacenter
-          ${PGIDS[0]}="null"
+          PGIDS[0]="null"
         elif [[ "$SPEED" == "fast" ]]; then
           PGIDS[0]=$(ps xao pgid,comm | grep -m 1 "kodi.bin" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
           sudo kill -STOP "-${PGIDS[0]}"
