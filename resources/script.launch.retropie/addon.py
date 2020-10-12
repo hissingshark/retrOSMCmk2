@@ -109,7 +109,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     self.connect(pyxbmct.ACTION_NAV_BACK, self.close)
 
   def draw_slot_menu(self):
-    global popup_button
+    global go_button
 
     # draw and configure select and delete buttons for each slot
     row = 0
@@ -132,7 +132,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     # draw "new session" button if free space (sits in the centre, spread over 2 cells)
     if slots < MAX_SLOTS:
       new_row = (((MAX_SLOTS - slots) / 2) + slots)
-      self.new_btn = pyxbmct.Button(popup_button, alignment=pyxbmct.ALIGN_CENTER)
+      self.new_btn = pyxbmct.Button(go_button, alignment=pyxbmct.ALIGN_CENTER)
       self.placeControl(self.new_btn, new_row, 4, 1, 2)
       self.connect(self.new_btn, self.new_slot_action.setTargetSlot)
     # and a settings button in the bottom left corner, only unavailalbe if 9 slots are used - unlikely
@@ -334,10 +334,11 @@ if len(sys.argv) > 1:
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
+  # configure go button for menu
   if (fast_switching == "true"):
-    popup_button = 'Start New Session'
+    go_button = 'Start New Session'
   else:
-    popup_button = 'Launch!'
+    go_button = 'Launch!'
 
   # disable Estuary-based design explicitly
   pyxbmct.skin.estuary = False # go retro - obviously!
