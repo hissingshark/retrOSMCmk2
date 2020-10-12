@@ -69,7 +69,7 @@ msgid "Fast App Switching"
 msgstr ""
 
 msgctxt "#32040"
-msgid "Instantly switch between Kodi and RetriPie!\nA remote and/or gamepad exit button must be configured"
+msgid "Instantly switch between Kodi and RetroPie!\nA remote and/or gamepad exit button must be configured"
 msgstr ""
 
 msgctxt "#32041"
