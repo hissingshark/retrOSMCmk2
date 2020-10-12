@@ -64,7 +64,7 @@ def remote_jammer(toggle):
 
 # reads a single line from a FIFO
 def read_FIFO(path):
-  global MODE
+  global SUBMODE
 
   while True:
     with open(path) as fifo:
@@ -74,7 +74,7 @@ def read_FIFO(path):
           dialog.ok("Program Exit Buttons", "No gamepads detected!")
           exit()
         elif line == "TIMEOUT":
-          if MODE == "PROGRAM":
+          if SUBMODE == "PROGRAM":
             dialog.ok("Program Exit Buttons", "No button pressed!")
           else:
             dialog.ok("Test Exit Buttons", "Did not detect exit combination!")
@@ -330,7 +330,7 @@ except (IOError, AttributeError): # no file or corrupt so leave blank
 # differentiates from a launch situation
 if len(sys.argv) > 1:
   MODE = sys.argv[1]
-  INPUTTYPE = sys.argv[2]
+  SUBMODE = sys.argv[2]
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
@@ -402,8 +402,8 @@ else:
 
 # if we are here then it wasn't a launch, but a request from the settings menu
 # parse arguments for required mode
-if INPUTTYPE == "CEC":
-  if MODE == "PROGRAM":
+if MODE == "CEC":
+  if SUBMODE == "PROGRAM":
     dialog.ok("Program Exit Key", "1. Press OK\n\n2. Repeatedly press the button on your TV remote that you want to exit RetroPie.")
     remote_jammer("START")
     cec_client("START")
@@ -430,10 +430,10 @@ if INPUTTYPE == "CEC":
     dialog.ok("CEC-client", "Keycode = %s\nDescription = %s" % (keycode, keydesc))
 
 
-  elif MODE == "SETTING":
+  elif SUBMODE == "SETTING":
     dialog.ok("Current CEC Keycode", "Code = %s\nDescription = %s" % (keycode, keydesc))
 
-  elif MODE == "TEST":
+  elif SUBMODE == "TEST":
     if keycode == "No keycode set yet!":
       dialog.ok("Test Exit Key", "Code = %s\nDescription = %s" % (keycode, keydesc))
     else:
@@ -457,16 +457,16 @@ if INPUTTYPE == "CEC":
       dialog.ok("CEC-client", msg)
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
-elif INPUTTYPE == "EVDEV":
+elif MODE == "EVDEV":
   # helper will automatically grab the device when testing to avoid a clash with Kodi - no jammer needed here
 
   # ensure FIFO is in place for evdev-helper comms
   if not path.exists(EVDEV_FIFO):
     os.mkfifo(EVDEV_FIFO)
 
-  if MODE == "PROGRAM":
+  if SUBMODE == "PROGRAM":
     dialog.textviewer("Program Exit Buttons", "These will work like RetroPie.\n\nYou configure a hotkey enable button and an exit button.  For example to exit back to Emulationstation most people are configured to hold down \"select\" and press \"start\".\n\nThe enable button could be the same as RetroPie, but the switch button MUST NOT ALREADY BE ASSIGNED to anything else in RetroPie e.g. exit, reset, save/load gamestate.\n\nProgramming instructions\n1. Press OK\n2. When requested press the hotkey enable button on the gamepad.\n3. Then when requested press the gamepad button you will use for the switching function.")
 
     # collect controller name and hotkey enable button
@@ -506,11 +506,11 @@ elif INPUTTYPE == "EVDEV":
     dialog.ok("New EVDEV Exit Settings", "Gamepad:\n%s\nHotkey enable button = %s\nExitkey enable button = %s" % (gamepad, hotbtncode, exitbtncode))
 
 
-  elif MODE == "SETTING":
+  elif SUBMODE == "SETTING":
     dialog.ok("Current EVDEV Exit Settings", "Gamepad:\n%s\nHotkey enable button = %s\nExitkey enable button = %s" % (gamepad, hotbtncode, exitbtncode))
 
 
-  elif MODE == "TEST":
+  elif SUBMODE == "TEST":
     if hotbtncode == "No button code set yet!":
       dialog.ok("Test Exit Buttons", "%s" % (hotbtncode))
     else:
@@ -526,10 +526,10 @@ elif INPUTTYPE == "EVDEV":
         dialog.ok("Test Exit Buttons", "Exit combination was not detected!")
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
-elif INPUTTYPE == "RES":
-  if MODE == "PROGRAM":
+elif MODE == "RES":
+  if SUBMODE == "PROGRAM":
     # obtain current video mode number
     tvs_proc = subprocess.Popen([TVSERVICE, "-s"], stdout=subprocess.PIPE)
     so, se = tvs_proc.communicate()
@@ -588,9 +588,9 @@ elif INPUTTYPE == "RES":
           outfile.write(newxml.toprettyxml(indent="",newl=""))
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
 else:
-  xbmc.log("ERROR!\n\"%s\" is a bad INPUTTYPE for %s" % (INPUTTYPE, sys.argv[0]), level=xbmc.LOGNOTICE)
+  xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
 
 #  xbmc.log("DEBUG: ", level=xbmc.LOGNOTICE)
