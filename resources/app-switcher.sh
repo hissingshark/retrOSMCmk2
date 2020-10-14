@@ -55,7 +55,8 @@ function rmSession() {
 
 # cleanup in event of a caught SIGTERM
 function cleanUp() {
-  pulseAudio hide
+  fs_setting=$(cat /home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml | grep fast-switching | cut -d '>' -f2 | cut -d '<' -f1)
+  [[ "$fs_setting" == "true" ]] && pulseAudio hide
 
   for ((slot=1; slot<${#PGIDS[@]}; slot++)); do
     rmSession 1
@@ -100,10 +101,8 @@ function setMode() {
 
 
 # hide PulseAudio from Kodi by swapping the config file with a blank and suspending the ALSA sink - or vice versa
+# called during fast-switching and by definition on Vero only
 function pulseAudio {
-  # only applies to Vero's fast switching
-  isVero || return
-
   if [[ "$1" == "show" ]]; then
     if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
       sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
@@ -149,8 +148,9 @@ fi
 # handle SIGTERM from a shutdown/restart of the service by systemd
 trap cleanUp 15
 
-# hide pulseaudio from Kodi at boot time  (precautionary as cleanup should have taken care of this at previous shutdown/restart)
-pulseAudio hide
+# hide pulseaudio from Kodi at boot time if fast-switching enabled (precautionary as cleanup should have taken care of this at previous shutdown/restart)
+fs_setting=$(cat /home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml | grep fast-switching | cut -d '>' -f2 | cut -d '<' -f1)
+[[ "$fs_setting" == "true" ]] && pulseAudio hide
 
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
@@ -165,6 +165,7 @@ while true; do
 
     # socket to pulseaudioserver if running
     PA_SERVER=$(ls /home/osmc/.config/pulse/*-runtime/native)
+    # TODO validate and log issues to kodi.log
 
     # act on requested mode
     if [[ "$MODE" == "dump" ]]; then
@@ -343,12 +344,12 @@ while true; do
         fi
 
         # re-enable ALSA sink on the PA server
-        pulseAudio show
+        [[ "$SPEED" == "fast" ]] && pulseAudio show
 
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
           # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
-          isVero && sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
+          [[ "$SPEED" == "fast" ]] && sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
 
           # current session slot also the latest
           ACTIVE_SESSION=${#PGIDS[@]}
@@ -415,7 +416,7 @@ while true; do
         setMode ${CEA[$ACTIVE_SESSION]}
 
         # disconnect emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
-        pulseAudio hide
+        [[ "$SPEED" == "fast" ]] && pulseAudio hide
 
         # exit methods no longer required
         systemctl stop cec-exit

@@ -17,6 +17,7 @@
         <setting label="32040" type="lsep"/>
         <setting label="32041" visible="!System.Platform.Linux.RaspberryPi" type="bool" id="fast-switching" default="false"/>
         <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
+        <setting label="32043" visible="!System.Platform.Linux.RaspberryPi" subsetting="true" enable="eq(-2,true)" type="action" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, PULSE, REMOVE)"/>
     </category>
     <category label="32003">
         <setting label="32030" type="lsep"/>

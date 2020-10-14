@@ -30,8 +30,6 @@ function firstTimeSetup() {
   depends=(dialog evtest git zip)
   if [[ "$platform" == "rpi" ]]; then
     depends+=(alsa-utils)
-  else
-    depends+=(pulseaudio)
   fi
   apt-get install -y "${depends[@]}" || { echo "FAILED!"; exit 1; }
   clear

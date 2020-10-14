@@ -80,6 +80,10 @@ msgctxt "#32042"
 msgid "Unfortunately this option is presently unavailable on the RPi"
 msgstr ""
 
+msgctxt "#32043"
+msgid "Remove PulseAudio"
+msgstr ""
+
 msgctxt "#32003"
 msgid "CEC Standby"
 msgstr ""

@@ -234,7 +234,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def openSettings(self):
       self.parent.close()
       xbmc.executebuiltin("Addon.openSettings(script.launch.retropie)")
-
+      exit()
 
 #
 # EXECUTION STARTS HERE
@@ -334,6 +334,42 @@ if len(sys.argv) > 1:
 
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
+  # fast switching (Vero4k only) needs PulseAudio - brief user and install if absent
+  if (fast_switching == "true"):
+    # Vero4K implied as the option is only visible in settings on that platform
+    pav = subprocess.Popen("pulseaudio --version", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    pav.wait()
+    if pav.returncode != 0:
+      # Pulse isn't installed yet, so give warning
+      dialog.ok("PulseAudio", "Fast-Switching has been enabled.  This requires PulseAudio to be installed.  On a clean install this will not affect Kodi.\nBut if you are using BlueAlsa or similar you may run into problems.  If so, you can remove it from the settings menu.")
+      install = dialog.yesno("PulseAudio", "Do you still want to install PulseAudio?\n\nIf not, Fast-Switching will just be disabled again.")
+      if install == True:
+        dialog.notification("retrOSMCmk2", "Installing PulseAudio\nPlease wait...", xbmcgui.NOTIFICATION_INFO, 8000)
+        apti = subprocess.Popen("sudo apt-get install -y pulseaudio", universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        apti.wait()
+        # check for success
+        if apti.returncode == 0:
+          dialog.notification("retrOSMCmk2", "PulseAudio installed.", xbmcgui.NOTIFICATION_INFO, 1500)
+          time.sleep(2)
+        else:
+          so, se = apti.communicate()
+          dialog.ok("PulseAudio", "Error installing PulseAudio!\n%s" % (se))
+          exit()
+
+      else:
+        dialog.notification("retrOSMCmk2", "Fast-Switching disabled.", xbmcgui.NOTIFICATION_INFO, 1500)
+        time.sleep(2)
+        # continue with slow switching
+        fast_switching = "false"
+        # disable fast-switching in settings
+        for setting in settings:
+          if setting.get("id") == "fast-switching":
+            setting.text = fast_switching
+        xmlstr = ET.tostring(settings).decode()
+        newxml = MD.parseString(xmlstr)
+        with open(SETTINGS,"w+") as outfile:
+          outfile.write(newxml.toprettyxml(indent="",newl=""))
+
   # configure go button for menu
   if (fast_switching == "true"):
     go_button = 'Start New Session'
@@ -586,6 +622,31 @@ elif MODE == "RES":
       newxml = MD.parseString(xmlstr)
       with open(DATA,"w+") as outfile:
           outfile.write(newxml.toprettyxml(indent="",newl=""))
+
+  else:
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+
+elif MODE == "PULSE":
+  if SUBMODE == "REMOVE":
+    # check Pulse is actually there to be removed
+    pav = subprocess.Popen("pulseaudio --version", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    pav.wait()
+    if pav.returncode != 0:
+      # Pulse wasn't actually installed!
+      dialog.ok("PulseAudio", "PulseAudio isn't installed!")
+      exit()
+
+    uninstall = dialog.yesno("PulseAudio", "This will uninstall PulseAudio.\n\nAre you sure?")
+    if uninstall == True:
+        dialog.notification("retrOSMCmk2", "Removing PulseAudio.\nPlease wait...", xbmcgui.NOTIFICATION_INFO, 6000)
+        aptr = subprocess.Popen("sudo apt-get remove -y pulseaudio", universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        # check for success
+        aptr.wait()
+        if aptr.returncode == 0:
+          dialog.notification("retrOSMCmk2", "PulseAudio removed.", xbmcgui.NOTIFICATION_INFO, 1500)
+        else:
+          so, se = aptr.communicate()
+          dialog.ok("PulseAudio", "Error removing PulseAudio!\n%s" % (se))
 
   else:
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
