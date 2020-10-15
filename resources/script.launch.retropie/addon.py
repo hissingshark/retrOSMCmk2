@@ -234,7 +234,6 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def openSettings(self):
       self.parent.close()
       xbmc.executebuiltin("Addon.openSettings(script.launch.retropie)")
-      exit()
 
 #
 # EXECUTION STARTS HERE
