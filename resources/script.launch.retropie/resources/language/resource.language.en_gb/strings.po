@@ -88,14 +88,6 @@ msgctxt "#32003"
 msgid "CEC Standby"
 msgstr ""
 
-msgctxt "#32030"
-msgid "Kodi may be configured to put a TV/AVR into standby at shutdown\nUnless blocked these signals will happen when launching RetroPie!"
-msgstr ""
-
-msgctxt "#32031"
-msgid "Block CEC signals"
-msgstr ""
-
 msgctxt "#32005"
 msgid "TV Mode"
 msgstr ""

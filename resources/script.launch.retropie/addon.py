@@ -303,7 +303,6 @@ except (AttributeError):
 # set defaults
 cec_exit = "false"
 evdev_exit = "false"
-kodi_signals = "false"
 fast_switching = "false"
 tv_mode = "false"
 
@@ -315,8 +314,6 @@ try:
       cec_exit = setting.text
     elif setting.get("id") == "evdev-exit":
       evdev_exit = setting.text
-    elif setting.get("id") == "kodi-signals":
-      kodi_signals = setting.text
     elif setting.get("id") == "fast-switching":
       fast_switching = setting.text
     elif setting.get("id") == "tv-mode":
@@ -411,7 +408,7 @@ else:
     exit() # backed out of session manager without choosing anything
 
   # something to look at whilst Kodi is shutting down
-  if (kodi_signals == "false" and fast_switching == "false"):
+  if (fast_switching == "false"):
     xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
 
   # start the CEC exit button watchdog?
@@ -427,7 +424,7 @@ else:
     resolution = 0
 
   # launch Emulationstation +/- fast switching which is needed to block CEC shutdown signals too
-  if (kodi_signals == "true" or fast_switching == "true"):
+  if (fast_switching == "true"):
     os.system('echo "switch es fast %s %s" >/tmp/app-switcher.fifo' % (target_slot, resolution))
   else:
     os.system('echo "switch es slow 0 %s" >/tmp/app-switcher.fifo' % (resolution))
