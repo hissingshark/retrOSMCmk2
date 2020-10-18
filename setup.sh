@@ -481,6 +481,11 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# setup FIFO for communication
+if [[ ! -p $FIFO ]]; then
+  sudo -u osmc mkfifo $FIFO
+fi
+
 # Adapted from the RetroPie platform detection
 case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
   BCM*)
