@@ -218,10 +218,6 @@ function patchRetroPie() {
   # remove EmulationStation from binary blacklist as we provide this on RPi3 and Vero4K
   sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-  # PATCH C
-  # provide our own GPG public key for signed package downloads
-  sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
   # ignore subsequent patches for RPi series
   if [[ "$platform" == "rpi" ]]; then
@@ -235,6 +231,7 @@ function patchRetroPie() {
 
     return 0
   fi
+
 
   # PATCH 1
   # encapsulate the RetroPie update function with our own, so we get to repatch after they update
@@ -275,6 +272,11 @@ function patchRetroPie() {
   # provide wrapper for retropie_packages.sh to chvt to current session
   mv submodule/RetroPie-Setup/retropie_packages.{sh,hidden}
   cp -a resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
+
+  # PATCH 6
+  # provide our own GPG public key for signed package downloads on Vero4K
+  sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+  sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
   # END OF PATCHING
   # must update SDL2 as they may be using a stale version without the custom patches
