@@ -121,7 +121,7 @@ function firstTimeSetup() {
   systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
   # app-switcher needs to be restarted if updated - but there may be sessions running, which will be lost
   # give user the option of closing those sessions now or rebooting the service later
-  echo "dump" > $FIFO
+  echo "dump" > $FIFO &
   sleep 0.1
   session_count=$(cat $FIFO)
   if [[ "$session_count" == "0" || $(systemctl is-active app-switcher) == "inactive" ]]; then
