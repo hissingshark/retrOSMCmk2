@@ -212,7 +212,10 @@ function firstTimeSetup() {
 function patchRetroPie() {
   # PATCH A
   # provide q3lite as RetroPie module
-  wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
+  wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports -O q3lite.sh https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
+  mkdir -p submodule/RetroPie-Setup/scriptmodules/ports/q3lite
+  wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports/q3lite -O q3lite.sh https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite/q3lite.sh
+  wget --directory-prefix=submodule/RetroPie-Setup/scriptmodules/ports/q3lite -O 01_vero4k.diff  https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite/01_vero4k.diff
 
   # PATCH B
   # remove EmulationStation from binary blacklist as we provide this on RPi3 and Vero4K
