@@ -125,7 +125,10 @@ function firstTimeSetup() {
   sleep 0.1
   session_count=$(cat $FIFO)
   if [[ "$session_count" == "0" || $(systemctl is-active app-switcher) == "inactive" ]]; then
-    systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
+    systemctl stop app-switcher.service || { echo "FAILED!"; exit 1; }
+    # ensure there is a config - even if blank - avoids SadFaceLoop with Buster
+    sudo touch "/usr/share/alsa/alsa.conf.d/pulse.conf"
+    systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
   else
     session_count=${session_count%%:*} # retrieve 1st value of a : delimited string
     plural='s'
@@ -166,7 +169,10 @@ function firstTimeSetup() {
       \nRestarting app-switcher service now...\n\
       " 0 0
     sleep 2
-    systemctl restart app-switcher.service || { echo "FAILED!"; exit 1; }
+    systemctl stop app-switcher.service || { echo "FAILED!"; exit 1; }
+    # ensure there is a config - even if blank - avoids SadFaceLoop with Buster
+    sudo touch "/usr/share/alsa/alsa.conf.d/pulse.conf"
+    systemctl start app-switcher.service || { echo "FAILED!"; exit 1; }
   fi
 
   # perform RPi specific configuration
