@@ -216,14 +216,16 @@ function firstTimeSetup() {
 
 # re-patch Retropie after an update
 function patchRetroPie() {
-  # PATCH A
+  # Generic Patches
+
+  # PATCH G1
   # encapsulate the RetroPie update function with our own, so we get to repatch after they update
   # rename the original function away
   sed -i '/function updatescript_setup()/s/updatescript_setup/updatescript_setup_original/' submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
   # append our wrapper function
   cat resources/updatescript_setup.sh >> submodule/RetroPie-Setup/scriptmodules/admin/setup.sh
 
-  # PATCH B
+  # PATCH G2
   # provide q3lite as RetroPie module
   wget -O submodule/RetroPie-Setup/scriptmodules/ports/q3lite.sh https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite.sh
   mkdir -p submodule/RetroPie-Setup/scriptmodules/ports/q3lite
@@ -231,26 +233,27 @@ function patchRetroPie() {
   wget -O submodule/RetroPie-Setup/scriptmodules/ports/q3lite/01_vero4k.diff  https://raw.githubusercontent.com/hissingshark/RetroPie-Setup/q3lite/scriptmodules/ports/q3lite/01_vero4k.diff
   chown -R osmc:osmc submodule/RetroPie-Setup/scriptmodules/ports/q3lite*
 
-  # PATCH C
+  # PATCH G3
   # remove EmulationStation from binary blacklist as we provide this on RPi3 and Vero4K
-  sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/ d' submodule/RetroPie-Setup/scriptmodules/packages.sh
+  sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/s/|ppsspp//' submodule/RetroPie-Setup/scriptmodules/packages.sh
+  sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/s/emulationstation|//' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-
-  # ignore subsequent patches for RPi series
+  # RPi patches
   if [[ "$platform" == "rpi" ]]; then
+    # PATCH R1
     # RetroPie host all RPi3 binaries except for EmulationStation - which we handle
     sed -i \
       -e '/function rp_getBinaryUrl() {/,/^}/s/$__binary_url/$osmc_url/' \
-      -e 's/function rp_getBinaryUrl() {/function rp_getBinaryUrl() {\n    if [[ "${__mod_id[$1]}" != "emulationstation" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/stretch\/rpi3"\n    fi/' \
+      -e 's/function rp_getBinaryUrl() {/function rp_getBinaryUrl() {\n    if [[ "${__mod_id[$1]}" != "emulationstation" ]] \&\& [[ "${__mod_id[$1]}" != "ppsspp" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/$__os_codename\/rpi3"\n    fi/' \
       -e '/function rp_installBin() {/,/^}/s/$__binary_url/$osmc_url/' \
-      -e 's/function rp_installBin() {/function rp_installBin() {\n    if [[ "$md_id" != "emulationstation" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/stretch\/rpi3"\n    fi/' \
-    packages.sh
+      -e 's/function rp_installBin() {/function rp_installBin() {\n    if [[ "$md_id" != "emulationstation" ]] \&\& [[ "$md_id" != "ppsspp" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/$__os_codename\/rpi3"\n    fi/' \
+    submodule/RetroPie-Setup/scriptmodules/packages.sh
 
     return 0
   fi
 
   # All following patches are for the Vero4K
-  # PATCH 1
+  # PATCH V1
   # use tvservice-shim and fbset-shim instead of the real thing and handle TTY selection
   if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
     # installed version patched in place
@@ -263,7 +266,7 @@ function patchRetroPie() {
   sed -i '/^#!/a echo "tty" > /tmp/app-switcher.fifo\nsleep 0.1\nRC_TTY=$(cat /tmp/app-switcher.fifo)\nsudo chvt $RC_TTY' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
   sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
 
-  # PATCH 2
+  # PATCH V2
   # make binaries available for Vero4K
   sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
@@ -274,16 +277,16 @@ function patchRetroPie() {
   sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/https:\/\/github.com\/RetroPie\/SDL-mirror/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
-  # PATCH 3
+  # PATCH V3
   # fix 4k/4K+ platform identification under new and old kernels
   sed -i 's/Vero4K|Vero4KPlus/*Vero*4K*/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
-  # PATCH 4
+  # PATCH V4
   # provide wrapper for retropie_packages.sh to chvt to current session
   mv submodule/RetroPie-Setup/retropie_packages.{sh,hidden}
   cp -a resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
 
-  # PATCH 5
+  # PATCH V5
   # provide our own GPG public key for signed package downloads on Vero4K
   sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
   sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
