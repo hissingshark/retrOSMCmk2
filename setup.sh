@@ -79,7 +79,7 @@ function firstTimeSetup() {
   # remove any old style scripts first
   rm -f /home/osmc/RetroPie/scripts/launcher.sh
   # copy over all new scripts
-  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
+  cp resources/{app-switcher.sh,cec-exit.py,es-launch.sh,evdev-exit.py,evdev-helper.sh,update-check.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
   if [[ "$platform" == "vero4k" ]]; then
     cp resources/{fbset-shim.sh,tvservice-shim.sh} /home/osmc/RetroPie/scripts || { echo "FAILED!"; exit 1; }
   fi
@@ -115,10 +115,12 @@ function firstTimeSetup() {
 
   # install and enable services
   # remove any old style service unit first
-  rm -f /etc/systemd/system/emulationstation.service
-  cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service} /etc/systemd/system/ || { echo "FAILED!"; exit 1; }
+  rm -f /etc/systemd/system/{emulationstation.service,app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service,retrosmcmk2-update.service,retrosmcmk2-update.timer}
+  cp resources/{app-switcher.service,cec-exit.service,evdev-exit.service,emulationstation@.service,retrosmcmk2-update.service,retrosmcmk2-update.timer} /lib/systemd/system/ || { echo "FAILED!"; exit 1; }
   systemctl daemon-reload || { echo "FAILED!"; exit 1; }
   systemctl enable app-switcher.service || { echo "FAILED!"; exit 1; }
+  systemctl enable retrosmcmk2-update.timer || { echo "FAILED!"; exit 1; }
+  systemctl start retrosmcmk2-update.timer || { echo "FAILED!"; exit 1; }
   # app-switcher needs to be restarted if updated - but there may be sessions running, which will be lost
   # give user the option of closing those sessions now or rebooting the service later
   echo "dump" > $FIFO &
@@ -466,23 +468,27 @@ function menuManageThis() {
           \nRetroPie itself(your emulators and their configs) will be untouched.\
           " 0 0 || continue
 
-        # reset any corruption in the repo then pull in latest version
-        su osmc -c -- 'git reset --hard HEAD'
-        su osmc -c -- 'git pull'
-
-        # install the components with the new version on disc
-        ../retrOSMCmk2/setup.sh SETUP
-
-        # avoid patching already patched files
-        su osmc -c -- "git -C submodule/RetroPie-Setup reset --hard"
-        # then patch using the new version
-        ../retrOSMCmk2/setup.sh PATCH
+        updateThis
 
         # restart this script to load the new version
         exec ../retrOSMCmk2/setup.sh
         ;;
     esac
   done
+}
+
+function updateThis() {
+  # reset to latest upstream version instead of pulling, to handle local contamination/divergence
+  su osmc -c -- 'git fetch'
+  su osmc -c -- 'git reset --hard origin/updater'
+
+  # install the components with the new version on disc
+  ../retrOSMCmk2/setup.sh SETUP
+
+  # avoid patching already patched files
+  su osmc -c -- "git -C submodule/RetroPie-Setup reset --hard"
+  # then patch using the new version
+  ../retrOSMCmk2/setup.sh PATCH
 }
 
 
@@ -532,6 +538,12 @@ fi
 
 if [[ "$1" == "PATCH" ]]; then
   patchRetroPie
+  popd >/dev/null
+  exit 0
+fi
+
+if [[ "$1" == "UPDATE" ]]; then
+  updateThis
   popd >/dev/null
   exit 0
 fi

@@ -103,3 +103,23 @@ msgstr ""
 msgctxt "#32052"
 msgid "Select launch mode"
 msgstr ""
+
+msgctxt "#32006"
+msgid "Updates"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Update the retrOSMCmk2 addon here"
+msgstr ""
+
+msgctxt "#32061"
+msgid "Check now for updates"
+msgstr ""
+
+msgctxt "#32062"
+msgid "Allow update notifications (urgent updates always shown)"
+msgstr ""
+
+msgctxt "#32063"
+msgid "Days between pending update reminders"
+msgstr ""

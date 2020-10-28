@@ -6,6 +6,8 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom as MD
 from shutil import copyfile
 from subprocess import check_output
+from datetime import timedelta
+from datetime import date
 
 
 #
@@ -70,6 +72,7 @@ def read_FIFO(path):
     with open(path) as fifo:
       for line in fifo:
         line = line.rstrip()
+
         if line == "NOPADS":
           dialog.ok("Program Exit Buttons", "No gamepads detected!")
           exit()
@@ -85,7 +88,25 @@ def read_FIFO(path):
           return line
         elif line == "EXIT":
           return line
+        elif "<ENTRY>" in line:
+          return line
+        else:
+          return line
 
+# confirms that Kodi is not currently playing, gaming or scraping
+def kodi_is_idle():
+  if xbmc.getCondVisibility("Player.Playing"):
+    return False
+  elif xbmc.getCondVisibility("Player.Paused"):
+    return False
+  elif xbmc.getCondVisibility("Player.HasGame"):
+    return False
+  elif xbmc.getCondVisibility("Library.IsScanningMusic"):
+    return False
+  elif xbmc.getCondVisibility("Library.IsScanningVideo"):
+    return False
+  else:
+    return True
 
 #
 # class for GUI
@@ -203,9 +224,11 @@ class slotManager(pyxbmct.AddonDialogWindow):
       if (fast_switching == "false" and self.slot > 0):
         # disable launch of slots in "slow mode"
         dialog.ok("App-Switching", "Please re-enable \"fast switching\" to access paused slots.")
-      else:
+      elif kodi_is_idle():
         target_slot = self.slot
         self.parent.close()
+      else:
+        dialog.notification("retrOSMCmk2", "Stop playback before you start gaming!", xbmcgui.NOTIFICATION_INFO, 5000)
 
   class deleteAction():
     def __init__(self, parent, slot):
@@ -298,6 +321,19 @@ try:
 except (AttributeError):
   resolution = "0"
   ET.SubElement(data, "resolution").text = resolution
+try:
+  pending_changelog = data.find("pending-changelog").text
+except (AttributeError):
+  pending_changelog = ""
+  ET.SubElement(data, "pending-changelog").text = pending_changelog
+try:
+  cld = data.find("changelog-date").text
+except (AttributeError):
+  cld = date.today().isoformat() # intialize arbitrarily to today's date
+  ET.SubElement(data, "changelog-date").text = cld
+finally:
+  clda = cld.split("-")
+  changelog_date = date(int(clda[0]), int(clda[1]), int(clda[2]))
 
 # load addon settings
 # set defaults
@@ -305,6 +341,8 @@ cec_exit = "false"
 evdev_exit = "false"
 fast_switching = "false"
 tv_mode = "false"
+reminder_delay = "3"
+allow_notifications = "false"
 
 try:
   settings_file = ET.parse(SETTINGS)
@@ -318,6 +356,10 @@ try:
       fast_switching = setting.text
     elif setting.get("id") == "tv-mode":
       tv_mode = setting.text
+    elif setting.get("id") == "reminder-delay":
+      reminder_delay = setting.text
+    elif setting.get("id") == "allow-notifications":
+      allow_notifications = setting.text
 except (IOError, AttributeError): # no file or corrupt so leave blank
   xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGNOTICE)
 
@@ -646,6 +688,127 @@ elif MODE == "PULSE":
 
   else:
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+
+elif MODE == "UPDATE":
+  changelog = "null"
+  today = date.today()
+
+  if SUBMODE == "CHECK":
+    # this is for manual checks initiated from the settings menu
+    allow_notifications = "true"
+    dialog.notification("retrOSMCmk2", "Checking for updates now...", xbmcgui.NOTIFICATION_INFO, 1500)
+    # recruit the script of the update-checking service
+    uc = subprocess.Popen("/home/osmc/RetroPie/scripts/update-check.sh manual", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    uc.wait()
+    # obtain latest changelog
+    os.system('echo "changelog read" > %s' % (SWITCHER_FIFO))
+    time.sleep(0.1)
+    changelog = read_FIFO(SWITCHER_FIFO)
+    if changelog == "":
+      dialog.ok("retrOSMCmk2", "No updates available.")
+    else:
+      # reset timestamps to log the manual check and locally exceed delay to force notify
+      data.find("changelog-date").text = today.isoformat()
+      changelog_date = date.today() - timedelta(days=int(reminder_delay))
+      # fall-through to NOTIFY mode
+      SUBMODE = "NOTIFY"
+
+  if SUBMODE == "NOTIFY":
+    # updates must be available
+    # check there is nothing being watched, to be less intrusive
+    while not kodi_is_idle():
+      time.sleep(30)
+
+    # obtain latest changelog if we haven't manually checked already
+    if changelog == "null":
+      os.system('echo "changelog read" > %s' % (SWITCHER_FIFO))
+      time.sleep(0.1)
+      changelog = read_FIFO(SWITCHER_FIFO)
+
+    # force urgent update notifications
+    if changelog.count("URGENT"):
+      allow_notifications = "true"
+      changelog_date = date.today() - timedelta(days=int(reminder_delay))
+    # no need to proceed if notifications are still muted
+    if allow_notifications == "false":
+      exit()
+
+    # check if this is a reminder of pending updates with no new changes in the log
+    if pending_changelog == changelog:
+      delay = timedelta(days=int(reminder_delay))
+      # and the delay has not yet been reached
+      if (today - changelog_date) < delay:
+        exit() # nothing to do
+
+      # then remind user an update is available and present a changelog
+      data.find("changelog-date").text = today.isoformat()
+      if changelog.count("URGENT"):
+        dialog.ok("retrOSMCmk2", "Reminder:\n\nURGENT updates to the addon are available.")
+        view = True
+      else:
+        view = dialog.yesno("retrOSMCmk2", "Reminder:", "Outstanding updates to the addon are available.\n\n", "View changelog or Ignore it again for now?", "Ignore", "View")
+    else:
+    # or a new update to be stored
+      data.find("changelog-date").text = today.isoformat()
+      # inform user an update is available and present a changelog
+      if changelog.count("URGENT"):
+        dialog.ok("retrOSMCmk2", "\nURGENT updates to the addon are available.")
+        view = True
+      else:
+        view = dialog.yesno("retrOSMCmk2", "An new update to the addon is available.\n", "\n", "View changelog or Ignore it for now?", "Ignore", "View")
+
+# TODO why are settings and data handled differently in Tree?  And lets get a setting function written!
+
+    if view == True:
+      data.find("pending-changelog").text = changelog
+
+      # colour text green - to be overridden by further markup as appropriate
+      changelog = "[COLOR green]" + changelog + "[/COLOR]"
+
+      # divide changelog by new and pending entries
+      if pending_changelog:
+        # filter to new events
+        changelog = changelog.replace(pending_changelog, '')
+        # mark pending events orange and append them
+        pending_changelog = "[COLOR yellow]" + pending_changelog + "[/COLOR]"
+        changelog += pending_changelog
+
+      # prepend the colour key (note - urgent items were already marked-up my the update-checker)
+      changelog = "  [COLOR green]New[/COLOR]  [COLOR yellow]Postponed[/COLOR]  [COLOR red]URGENT[/COLOR]\n" + changelog
+
+      # insert line breaks and numbering
+      for line in range(1, changelog.count("<ENTRY>") + 1):
+        changelog = changelog.replace("<ENTRY>", "\n\n[COLOR white]%d.[/COLOR] " % (line), 1)
+
+      dialog.textviewer("retrOSMCmk2", "Changelog:%s" % (changelog))
+      update = dialog.yesno("retrOSMCmk2", "Install the update or Ignore it for now?", "\n", "\n", "Ignore", "Install")
+      if update == True:
+        dialog.notification("retrOSMCmk2", "Updating now...", xbmcgui.NOTIFICATION_INFO, 10000)
+        ur = subprocess.Popen("sudo /home/osmc/retrOSMCmk2/setup.sh UPDATE", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+        xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
+        ur.wait()
+        xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
+        if ur.returncode != 0:
+          # Error with the update process
+          dialog.ok("retrOSMCmk2", "ERROR:\nThe update process was unsuccessful!")
+          exit()
+        else:
+          os.system('echo "changelog clear" > %s' % (SWITCHER_FIFO))
+          data.find("pending-changelog").text = ""
+          dialog.ok("retrOSMCmk2", "Update successful.")
+      else:
+        dialog.ok("retrOSMCmk2", "Update ignored this time.\nYou can still manually update from the settings page.")
+    else:
+      dialog.ok("retrOSMCmk2", "Update ignored this time.\nYou can still manually update from the settings page.")
+
+  else:
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+
+  # write out addon data.xml
+  xmlstr = ET.tostring(data).decode()
+  newxml = MD.parseString(xmlstr)
+  with open(DATA,"w+") as outfile:
+      outfile.write(newxml.toprettyxml(indent="",newl=""))
 
 else:
   xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)

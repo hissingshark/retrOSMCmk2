@@ -1,0 +1,10 @@
+[Unit]
+Description=Update checker for retrOSMCmk2
+After=mediacenter.service
+
+[Service]
+Type=simple
+ExecStart=/home/osmc/RetroPie/scripts/update-check.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -180,6 +180,22 @@ while true; do
       # share session TTY for use in runcommand.sh (same as service target num)
       echo "${TARGETS[$ACTIVE_SESSION]}" > "$FIFO"
 
+    elif [[ "$MODE" == "changelog" ]]; then
+      case "${opts[1]}" in
+        write)
+          cutArray 0 opts
+          cutArray 0 opts
+          deltalog="${opts[@]}"
+          ;;
+        read)
+          echo "$deltalog" > "$FIFO"
+          ;;
+        clear)
+          deltalog=''
+          ;;
+      esac
+
+
     elif [[ "$MODE" == "update" ]]; then
       # lookup full platform name to beautify it in the menu
       case "${opts[1]}" in

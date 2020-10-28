@@ -25,5 +25,11 @@
         <setting label="32052" visible="!System.Platform.Linux.RaspberryPi" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, RES, PROGRAM)"/>
         <setting label="32042" visible="System.Platform.Linux.RaspberryPi"/>
     </category>
+    <category label="32006">
+        <setting label="32060" type="lsep"/>
+        <setting label="32061" subsetting="true" type="action" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, UPDATE, CHECK)"/>
+        <setting label="32062" type="bool" id="allow-notifications" default="true"/>
+        <setting label="32063" subsetting="true" enable="eq(-1,true)" type="slider" id="reminder-delay" default="3" range="1,30" option="int"/>
+    </category>
 </settings>
 
