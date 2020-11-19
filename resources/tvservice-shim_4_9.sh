@@ -1,5 +1,5 @@
 #!/bin/bash
-pref=`cat /sys/class/display/mode`
+pref=$(cat /sys/class/display/mode)
 
 if [ -z "$*" ]; then
 	# Writes command usage information if no arguments are sent to the script 
@@ -19,7 +19,7 @@ if [ -z "$*" ]; then
 fi
 # Setting the displays preferred resolution
 function setprefered(){
-	spcap=`cat /sys/class/amhdmitx/amhdmitx0/disp_cap | grep "*"| sed 's/\*//g'`
+	spcap=$(cat /sys/class/amhdmitx/amhdmitx0/disp_cap | grep "*"| sed 's/\*//g')
 	resol=$(resulution $spcap)
 	IFS=',' sparr=(${resol})
 	IFS=$OLDIFS
@@ -77,7 +77,6 @@ function resulution(){
 		"1366x768p60hz"|"1366x768p60hz*")	    X=1366	Y=768 	aspect="16:9"		vm=81		cs=85		hz=60	ip="progressive"	typ="DMT";;
 		"1400x1050p60hz"|"1400x1050p60hz*")	    X=1400	Y=1050 	aspect="4:3"		vm=42		cs=101		hz=60	ip="progressive"	typ="DMT";;
 		"1440x900p60hz"|"1440x900p60hz*")	    X=1440	Y=900 	aspect="16:10"		vm=47		cs=106		hz=60	ip="progressive"	typ="DMT";;
-		"1440x900p60hz"|"1440x900p60hz*")	    X=1440	Y=900 	aspect="16:10"		vm=47		cs=106		hz=60	ip="progressive"	typ="DMT";;
 		"1600x900p60hz"|"1600x900p60hz*")	    X=1600	Y=900 	aspect="16:9"		vm=83		cs=108		hz=60	ip="progressive"	typ="DMT";;
 		"1600x1200p60hz"|"1600x1200p60hz*")	    X=1600	Y=1200 	aspect="4:3"		vm=51		cs=162		hz=60	ip="progressive"	typ="DMT";;
 		"1680x1050p60hz"|"1680x1050p60hz*")	    X=1680	Y=1050 	aspect="16:10"		vm=58		cs=146		hz=60	ip="progressive"	typ="DMT";;
@@ -101,8 +100,7 @@ function resulution(){
 	*)	X="n/a" Y="n/a" aspect="n/a" vm="n/a" cs="n/a" hz="n/a"  ip="n/a" typ="n/a" ;;
 	esac
 	reso="$vm,$aspect,$X,$Y,$hz,$cs,$ip,$typ"
-	if [[ $1 =~ "*" ]]
-	then
+	if echo x"$1" | grep -q '*' ;then
 		reso="$reso,(prefer)"
 	fi
 	echo "$reso"
@@ -125,10 +123,10 @@ case $1 in
 			else
 				case $3 in
 					CEA|cea)
-						jdispcap=`cat /sys/class/amhdmitx/amhdmitx0/disp_cap`
+						jdispcap=$(cat /sys/class/amhdmitx/amhdmitx0/disp_cap)
 						for jcea in $jdispcap
 						do
-							jccounter=`expr $jccounter + 1`
+							jccounter=$(($jccounter + 1))
 							jinfoloop=$(resulution $jcea)
 							IFS=',' jcinfo=(${jinfoloop})
 							IFS=$OLDIFS
@@ -145,10 +143,10 @@ case $1 in
 						echo "]"
 					;;
 					DMT|dmt)
-						jvesacap=`cat /sys/class/amhdmitx/amhdmitx0/vesa_cap`
+						jvesacap=$(cat /sys/class/amhdmitx/amhdmitx0/vesa_cap)
 						for jdmt in $jvesacap
 						do
-							jvcounter=`expr $jvcounter + 1`
+							jvcounter=$(($jvcounter + 1))
 							jvinfoloop=$(resulution $jdmt)
 							IFS=',' jvinfo=(${jvinfoloop})
 							IFS=$OLDIFS
@@ -186,7 +184,7 @@ case $1 in
                 rm --force temp.edid.txt
             fi
 
-            ediddata=`cat /sys/class/amhdmitx/amhdmitx0/rawedid`
+            ediddata=$(cat /sys/class/amhdmitx/amhdmitx0/rawedid)
 			oLang=$LANG
 			oLcAll=$LC_ALL
 			LANG=C
@@ -213,7 +211,7 @@ case $1 in
 		readarray -t ainfo <<< "$audcap2"
 		for lines in "${ainfo[@]}"
 		do
-			acounter=`expr $acounter + 1`
+			acounter=$(($acounter + 1))
 			IFS=',' alinfo=(${lines})
 			IFS=$OLDIFS
 			numchan=$(rev <<< "${alinfo[1]}" | cut -c 4- | rev)
@@ -253,12 +251,12 @@ case $1 in
 			echo "You need to enter Group CEA/DMT"
 		else
 			if [[ "$2" =~ "CEA" ]]; then
-				dispcap=`cat /sys/class/amhdmitx/amhdmitx0/disp_cap`
-				cealines=`echo "$dispcap" | wc -l`
+				dispcap=$(cat /sys/class/amhdmitx/amhdmitx0/disp_cap)
+				cealines=$(echo "$dispcap" | wc -l)
 				echo "Group CEA has "$cealines" modes:"
 				for cea in $dispcap
 				do
-					ccounter=`expr $ccounter + 1`
+					ccounter=$(($ccounter + 1))
 					infoloop=$(resulution $cea)
 					IFS=',' cinfo=(${infoloop})
 					IFS=$OLDIFS
@@ -274,12 +272,12 @@ case $1 in
 				printf "%s\n" "${sorted[@]}"
 
 			elif [[ "$2" =~ "DMT" ]]; then
-				vesacap=`cat /sys/class/amhdmitx/amhdmitx0/vesa_cap`
-				dmtlines=`echo "$vesacap" | wc -l`
+				vesacap=$(cat /sys/class/amhdmitx/amhdmitx0/vesa_cap)
+				dmtlines=$(echo "$vesacap" | wc -l)
 				echo "Group DMT has "$dmtlines" modes:"
 				for dmt in $vesacap
 				do
-					vcounter=`expr $vcounter + 1`
+					vcounter=$(($vcounter + 1))
 					vinfoloop=$(resulution $dmt)
 					IFS=',' vinfo=(${vinfoloop})
 					IFS=$OLDIFS
@@ -554,8 +552,7 @@ case $1 in
 
 	-n|--name)
 		# Grabbs the displays Product name from EDID data and returns it to console
-		dispname=`cat /sys/class/amhdmitx/amhdmitx0/edid | grep "Rx Product Name:"`
-		dispresult=`sed 's/.*Rx Product Name: '// <<< $dispname`
+		dispresult=$(cat /sys/class/amhdmitx/amhdmitx0/edid | grep "Rx Product Name:"|sed 's/.*Rx Product Name: '//)
 		echo "device_name="$dispresult
 	;;
 
