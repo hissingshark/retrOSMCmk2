@@ -342,7 +342,7 @@ evdev_exit = "false"
 fast_switching = "false"
 tv_mode = "false"
 reminder_delay = "3"
-allow_notifications = "false"
+allow_notifications = "true"
 
 try:
   settings_file = ET.parse(SETTINGS)
