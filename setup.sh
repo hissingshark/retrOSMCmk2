@@ -480,7 +480,7 @@ function menuManageThis() {
 function updateThis() {
   # reset to latest upstream version instead of pulling, to handle local contamination/divergence
   su osmc -c -- 'git fetch'
-  su osmc -c -- 'git reset --hard origin/updater'
+  su osmc -c -- 'git reset --hard origin/master'
 
   # install the components with the new version on disc
   ../retrOSMCmk2/setup.sh SETUP
