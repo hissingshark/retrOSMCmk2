@@ -148,6 +148,10 @@ fi
 # handle SIGTERM from a shutdown/restart of the service by systemd
 trap cleanUp 15
 
+# handle Kodi 18 -> 19 migration because of Python 2 -> 3
+# the sourced file is removed thereafter
+[[ -f /home/osmc/retrOSMCmk2/resources/matrix_migration.sh.foo ]] && source /home/osmc/retrOSMCmk2/resources/matrix_migration.sh
+
 # hide pulseaudio from Kodi at boot time if fast-switching enabled (precautionary as cleanup should have taken care of this at previous shutdown/restart)
 fs_setting=$(cat /home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml | grep fast-switching | cut -d '>' -f2 | cut -d '<' -f1)
 [[ "$fs_setting" == "true" ]] && pulseAudio hide
