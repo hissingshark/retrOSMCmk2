@@ -1,0 +1,33 @@
+<settings>
+    <category label="32001">
+        <setting label="32010" type="lsep"/>
+        <setting label="32011" type="bool" subsetting="true" id="cec-exit" default="false"/>
+        <setting label="32012" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, CEC, PROGRAM)"/>
+        <setting label="32013" subsetting="true" type="action" enable="eq(-2,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, CEC, SETTING)"/>
+        <setting label="32014" subsetting="true" type="action" enable="eq(-3,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, CEC, TEST)"/>
+    </category>
+    <category label="32002">
+        <setting label="32020" type="lsep"/>
+        <setting label="32021" type="bool" id="evdev-exit" default="false"/>
+        <setting label="32022" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, EVDEV, PROGRAM)"/>
+        <setting label="32023" subsetting="true" type="action" enable="eq(-2,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, EVDEV, SETTING)"/>
+        <setting label="32024" subsetting="true" type="action" enable="eq(-3,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, EVDEV, TEST)"/>
+    </category>
+    <category label="32004">
+        <setting label="32040" type="lsep"/>
+        <setting label="32041" visible="false" type="bool" id="fast-switching" default="false"/>
+        <setting label="32042"/>
+    </category>
+    <category label="32005">
+        <setting label="32050" type="lsep"/>
+        <setting label="32051" visible="false" type="bool" id="tv-mode" default="false"/>
+        <setting label="32042"/>
+    </category>
+    <category label="32006">
+        <setting label="32060" type="lsep"/>
+        <setting label="32061" subsetting="true" type="action" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, UPDATE, CHECK)"/>
+        <setting label="32062" type="bool" id="allow-notifications" default="true"/>
+        <setting label="32063" subsetting="true" enable="eq(-1,true)" type="slider" id="reminder-delay" default="3" range="1,30" option="int"/>
+    </category>
+</settings>
+

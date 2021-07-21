@@ -154,7 +154,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     if slots < MAX_SLOTS:
       new_row = (((MAX_SLOTS - slots) / 2) + slots)
       self.new_btn = pyxbmct.Button(go_button, alignment=pyxbmct.ALIGN_CENTER)
-      self.placeControl(self.new_btn, new_row, 4, 1, 2)
+      self.placeControl(self.new_btn, int(new_row), 4, 1, 2)
       self.connect(self.new_btn, self.new_slot_action.setTargetSlot)
     # and a settings button in the bottom left corner, only unavailalbe if 9 slots are used - unlikely
       self.settings_btn = pyxbmct.Button('Settings', alignment=pyxbmct.ALIGN_CENTER)
@@ -286,7 +286,7 @@ try: # read in the data file
   data_file = ET.parse(DATA)
   data = data_file.getroot()
 except (IOError, AttributeError): # no file or corrupt
-  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGNOTICE)
+  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGINFO)
   # create temporary default tree
   data = ET.Element("data")
 
@@ -361,7 +361,7 @@ try:
     elif setting.get("id") == "allow-notifications":
       allow_notifications = setting.text
 except (IOError, AttributeError): # no file or corrupt so leave blank
-  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGNOTICE)
+  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGINFO)
 
 
 # check an arg was actually passed to the script so it's all addon settings-page related
@@ -531,7 +531,7 @@ if MODE == "CEC":
       dialog.ok("CEC-client", msg)
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
 elif MODE == "EVDEV":
   # helper will automatically grab the device when testing to avoid a clash with Kodi - no jammer needed here
@@ -600,7 +600,7 @@ elif MODE == "EVDEV":
         dialog.ok("Test Exit Buttons", "Exit combination was not detected!")
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
 elif MODE == "RES":
   if SUBMODE == "PROGRAM":
@@ -634,7 +634,7 @@ elif MODE == "RES":
 
     # present list for user to select
     chosen_mode = dialog.select("Select TV mode for launch", available_modes)
-    xbmc.log(str(chosen_mode), level=xbmc.LOGNOTICE)
+    xbmc.log(str(chosen_mode), level=xbmc.LOGINFO)
     # exit if nothing selected
     if chosen_mode == -1:
       exit()
@@ -662,7 +662,7 @@ elif MODE == "RES":
           outfile.write(newxml.toprettyxml(indent="",newl=""))
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
 elif MODE == "PULSE":
   if SUBMODE == "REMOVE":
@@ -687,7 +687,7 @@ elif MODE == "PULSE":
           dialog.ok("PulseAudio", "Error removing PulseAudio!\n%s" % (se))
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
 elif MODE == "UPDATE":
   changelog = "null"
@@ -802,7 +802,7 @@ elif MODE == "UPDATE":
       dialog.ok("retrOSMCmk2", "Update ignored this time.\nYou can still manually update from the settings page.")
 
   else:
-    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+    xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
   # write out addon data.xml
   xmlstr = ET.tostring(data).decode()
@@ -811,6 +811,6 @@ elif MODE == "UPDATE":
       outfile.write(newxml.toprettyxml(indent="",newl=""))
 
 else:
-  xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGNOTICE)
+  xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGINFO)
 
-#  xbmc.log("DEBUG: ", level=xbmc.LOGNOTICE)
+#  xbmc.log("DEBUG: ", level=xbmc.LOGINFO)

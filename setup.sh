@@ -91,6 +91,9 @@ function firstTimeSetup() {
 
   # retrOSMCmk2 Kodi addon installation allowing for clean or upgrade from beta or alpha types
   cd resources
+  # first configure the addon settings page for RPi/Vero4k
+  cp "settings.xml.$platform" script.launch.retropie/resources/settings.xml || { echo "FAILED!"; exit 1; }
+
   if [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie ]]; then # clean install of addon
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
      su osmc -c -- 'zip -r /home/osmc/script.launch.retropie.zip script.launch.retropie' || { echo "FAILED!"; exit 1; }
