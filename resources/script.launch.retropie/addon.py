@@ -605,14 +605,14 @@ elif MODE == "EVDEV":
 elif MODE == "RES":
   if SUBMODE == "PROGRAM":
     # obtain current video mode number
-    tvs_proc = subprocess.Popen([TVSERVICE, "-s"], stdout=subprocess.PIPE)
+    tvs_proc = subprocess.Popen([TVSERVICE, "-s"], stdout=subprocess.PIPE, encoding="utf-8", text=True)
     so, se = tvs_proc.communicate()
     current_mode = so.split('(', 1)[1].split(')')[0]
     chosen_mode = resolution # from config
 
     # obtain available modes
     mode_refs = []
-    tvs_proc = subprocess.Popen([TVSERVICE, "-m","CEA"], stdout=subprocess.PIPE)
+    tvs_proc = subprocess.Popen([TVSERVICE, "-m","CEA"], stdout=subprocess.PIPE, encoding="utf-8", text=True)
     so, se = tvs_proc.communicate()
     # newline seperated list
     available_modes = so.split("\n")
