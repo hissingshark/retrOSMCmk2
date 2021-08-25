@@ -28,7 +28,7 @@ function firstTimeSetup() {
   # get dependancies
   echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
   depends=(dialog evtest git zip)
-  if [[ "$platform" == "rpi" ]]; then
+  if [[ "$platform" == rpi* ]]; then
     depends+=(alsa-utils)
   fi
   apt-get install -y "${depends[@]}" || { echo "FAILED!"; exit 1; }
@@ -92,7 +92,7 @@ function firstTimeSetup() {
   # retrOSMCmk2 Kodi addon installation allowing for clean or upgrade from beta or alpha types
   cd resources
   # first configure the addon settings page for RPi/Vero4k
-  cp "settings.xml.$platform" script.launch.retropie/resources/settings.xml || { echo "FAILED!"; exit 1; }
+  cp "settings.xml.$(echo $platform | sed 's/[0-4]$//')" script.launch.retropie/resources/settings.xml || { echo "FAILED!"; exit 1; }
 
   if [[ ! -d /home/osmc/.kodi/addons/script.launch.retropie ]]; then # clean install of addon
     # provide retrOSMCmk2 Kodi addon as zip for install from osmc home folder
@@ -181,7 +181,7 @@ function firstTimeSetup() {
   fi
 
   # perform RPi specific configuration
-  if [[ "$platform" == "rpi" ]]; then
+  if [[ "$platform" == rpi* ]]; then
     # add fix to config.txt for sound
     if [[ ! $(grep "dtparam=audio=on" "/boot/config.txt") ]]; then
       sudo su -c 'echo -e "dtparam=audio=on" >> "/boot/config.txt"'
@@ -243,21 +243,32 @@ function patchRetroPie() {
   sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/s/|ppsspp//' submodule/RetroPie-Setup/scriptmodules/packages.sh
   sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/s/emulationstation|//' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-  # RPi patches
-  if [[ "$platform" == "rpi" ]]; then
-    # PATCH R1
-    # RetroPie host all RPi3 binaries except for EmulationStation - which we handle
-    sed -i \
-      -e '/function rp_getBinaryUrl() {/,/^}/s/$__binary_url/$osmc_url/' \
-      -e 's/function rp_getBinaryUrl() {/function rp_getBinaryUrl() {\n    if [[ "${__mod_id[$1]}" != "emulationstation" ]] \&\& [[ "${__mod_id[$1]}" != "ppsspp" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/$__os_codename\/rpi3"\n    fi/' \
-      -e '/function rp_installBin() {/,/^}/s/$__binary_url/$osmc_url/' \
-      -e 's/function rp_installBin() {/function rp_installBin() {\n    if [[ "$md_id" != "emulationstation" ]] \&\& [[ "$md_id" != "ppsspp" ]]; then\n        osmc_url=$__binary_url\n    else\n        osmc_url="http:\/\/download.osmc.tv\/dev\/hissingshark\/binaries\/$__os_codename\/rpi3"\n    fi/' \
-    submodule/RetroPie-Setup/scriptmodules/packages.sh
 
-    return 0
+  # RPi2/3 and Vero4k patches
+  if [[ "$platform" == rpi[2..3] || "$platform" == "vero4k" ]]; then
+    # PATCH R23V1
+    # RetroPie no longer host the RPi2/3 binaries because OSMC is running the unsupported GL drivers - so we provide them as well as Vero4k
+    # Let RetroPie handle RPi4
+    sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+    sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
+    sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
   fi
 
-  # All following patches are for the Vero4K
+  # PATCH R23V2
+  # provide our own GPG public key for signed package downloads
+  sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
+  sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
+
+  # PATCH R23V3
+  # hold SDL2 version for our downloads
+  sed -i '/local ver="$(get_ver_sdl2)+/s/+./+5/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+
+  # No more patches affecting RPi
+  [[ "$platform" == rpi* ]] && return 0
+
+
+  # All following patches must be for the Vero4K
   # PATCH V1
   # use tvservice-shim and fbset-shim instead of the real thing and handle TTY selection
   if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
@@ -272,14 +283,7 @@ function patchRetroPie() {
   sed -i '/TVSERVICE=/s/.*/TVSERVICE=\"\/home\/osmc\/RetroPie\/scripts\/tvservice-shim.sh\"\nshopt -s expand_aliases\nalias fbset=\"\/home\/osmc\/RetroPie\/scripts\/fbset-shim.sh\"/' submodule/RetroPie-Setup/scriptmodules/supplementary/runcommand/runcommand.sh
 
   # PATCH V2
-  # make binaries available for Vero4K
-  sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  sed -i '/__binary.*_url=/s/https/http/' submodule/RetroPie-Setup/scriptmodules/system.sh
-
-  sed -i '/if ! isPlatform "rpi"; then/s/rpi/vero4k/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-  sed -i '/local ver="$(get_ver_sdl2)+/s/+./+5/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-  sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  # build SDL2 from our custom fork on Vero4K due to fast switching fixes
   sed -i '/https:\/\/github.com\/RetroPie\/SDL-mirror/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
   # PATCH V3
@@ -291,10 +295,6 @@ function patchRetroPie() {
   mv submodule/RetroPie-Setup/retropie_packages.{sh,hidden}
   cp -a resources/retropie_packages.sh.wrapper submodule/RetroPie-Setup/retropie_packages.sh
 
-  # PATCH V5
-  # provide our own GPG public key for signed package downloads on Vero4K
-  sed -i '/ __gpg_signing_key/s/=.*/="retrosmcmk2@hissingshark.co.uk"/' submodule/RetroPie-Setup/scriptmodules/system.sh
-  sed -i 's/--recv-keys.*/--recv-keys 5B92B8BB0BD260ECE3CE9E36688B104E245087F2/' submodule/RetroPie-Setup/scriptmodules/system.sh
 
   # END OF PATCHING
   # must update SDL2 as they may be using a stale version without the custom patches
@@ -513,13 +513,25 @@ fi
 # Adapted from the RetroPie platform detection
 case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
   BCM*)
-    platform="rpi"
+    rev="0x$(sed -n '/^Revision/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)"
+    cpu=$((($rev >> 12) & 15))
+    case $cpu in
+      1)
+        platform="rpi2"
+        ;;
+      2)
+        platform="rpi3"
+        ;;
+      3)
+        platform="rpi4"
+        ;;
+    esac
     ;;
   *Vero*4K*)
     platform="vero4k"
     ;;
   *)
-    echo -e "*****\nUnknown platform!  $LOGO supports:\nRPi(Zero/1/2/3/4)\nVero (4K/4K+)\n*****\n"
+    echo -e "*****\nUnknown platform!  $LOGO supports:\nRPi(2/3/4)\nVero (4K/4K+)\n*****\n"
     exit 1
     ;;
 esac
@@ -596,7 +608,7 @@ while true; do
       # Run RetroPie-Setup
       # offer to stop a running Kodi instance on RPi to save memory
       kodiRestart=0
-      if [[ "$(pgrep kodi)" && "$platform" == "rpi" ]]; then
+      if [[ "$(pgrep kodi)" && "$platform" == rpi* ]]; then
         clear
         dialog \
           --backtitle "$BACKTITLE" \
