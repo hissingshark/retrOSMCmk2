@@ -27,7 +27,7 @@ reinstall_sdl2=0
 function firstTimeSetup() {
   # get dependancies
   echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
-  depends=(dialog evtest git zip)
+  depends=(dialog evtest git zip gpg)
   if [[ "$platform" == rpi* ]]; then
     depends+=(alsa-utils)
   fi
