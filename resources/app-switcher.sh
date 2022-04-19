@@ -55,9 +55,6 @@ function rmSession() {
 
 # cleanup in event of a caught SIGTERM
 function cleanUp() {
-  fs_setting=$(cat /home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml | grep fast-switching | cut -d '>' -f2 | cut -d '<' -f1)
-  [[ "$fs_setting" == "true" ]] && pulseAudio hide
-
   for ((slot=1; slot<${#PGIDS[@]}; slot++)); do
     rmSession 1
   done
@@ -100,26 +97,6 @@ function setMode() {
 }
 
 
-# hide PulseAudio from Kodi by swapping the config file with a blank and suspending the ALSA sink - or vice versa
-# called during fast-switching and by definition on Vero only
-function pulseAudio {
-  if [[ "$1" == "show" ]]; then
-    if [[ -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
-      sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf.disabled /usr/share/alsa/alsa.conf.d/pulse.conf
-    fi
-    sudo sed -i '/autospawn=/s/^.*$/autospawn=yes/' /etc/pulse/client.conf.d/00-disable-autospawn.conf
-    sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 0
-  elif [[ "$1" == "hide" ]]; then
-    sudo -u osmc pactl --server="$PA_SERVER" suspend-sink 0 1
-    sudo sed -i '/autospawn=/s/^.*$/autospawn=no/' /etc/pulse/client.conf.d/00-disable-autospawn.conf
-    if [[ ! -f "/usr/share/alsa/alsa.conf.d/pulse.conf.disabled" ]]; then
-      sudo mv /usr/share/alsa/alsa.conf.d/pulse.conf /usr/share/alsa/alsa.conf.d/pulse.conf.disabled
-      sudo touch /usr/share/alsa/alsa.conf.d/pulse.conf
-    fi
-  fi
-}
-
-
 ##############
 #  VARIABLES #
 ##############
@@ -148,10 +125,6 @@ fi
 # handle SIGTERM from a shutdown/restart of the service by systemd
 trap cleanUp 15
 
-# hide pulseaudio from Kodi at boot time if fast-switching enabled (precautionary as cleanup should have taken care of this at previous shutdown/restart)
-fs_setting=$(cat /home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml | grep fast-switching | cut -d '>' -f2 | cut -d '<' -f1)
-[[ "$fs_setting" == "true" ]] && pulseAudio hide
-
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
   sudo -u osmc mkfifo $FIFO
@@ -163,8 +136,6 @@ while true; do
     opts=( $msg )
     MODE="${opts[0]}" # dumping the arrays, updating the arrays or switching application
 
-    # socket to pulseaudioserver if running
-    PA_SERVER=$(ls /home/osmc/.config/pulse/*-runtime/native)
     # TODO validate and log issues to kodi.log
 
     # act on requested mode
@@ -359,12 +330,9 @@ while true; do
           bash "/home/osmc/RetroPie/scripts/kodi-stops.sh"
         fi
 
-        # re-enable ALSA sink on the PA server
-        [[ "$SPEED" == "fast" ]] && pulseAudio show
-
         # start a new session or...
         if [[ "$REQUESTED_SESSION" == 0 ]]; then
-          # retroarch cores must use SDL2 for audio, else the pulseaudio setup leads to severe distortion
+          # retroarch cores must use SDL2 for audio, as that's how we suspend the sink for fast switching
           [[ "$SPEED" == "fast" ]] && sed -i '/audio_driver =/c\audio_driver = sdl2' /opt/retropie/configs/all/retroarch.cfg
 
           # current session slot also the latest
@@ -408,7 +376,17 @@ while true; do
         fi
 
       elif [[ "$DESTINATION" == "mc" ]]; then
-        if [[ "$SPEED" == "slow" ]]; then
+          # find the lead emulator process (member of group started most recently - may not be highest PID due to wraparound)
+          ALSA_PROC=$(ps -g "${PGIDS[$ACTIVE_SESSION]}" o pid --sort -etimes | tail -n 1)
+
+          # fall back to slow switching if non-SDL2 audio (very rare), otherwise ALSA won't be released
+          if [[ "$SPEED" == "fast" ]]; then
+            if [[ "$(pstree -tc $ALSA_PROC | grep suspend_monitor)" == "" ]]; then
+              SPEED="slow"
+            fi
+          fi
+
+          if [[ "$SPEED" == "slow" ]]; then
           systemctl stop emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
           cutArray $ACTIVE_SESSION CEA
           cutArray $ACTIVE_SESSION PGIDS
@@ -419,6 +397,15 @@ while true; do
           # store TV mode of the outgoing session
           CEA[$ACTIVE_SESSION]=$(getMode)
           # halt session
+          # send signal to shutdown audio (only if it has an SDL audio thread)
+          if [[ "$(pstree -tc $ALSA_PROC | grep SDLHotplugALSA)" != "" ]]; then
+            sudo kill -USR1 $ALSA_PROC
+            # wait until that process's ALSA thread has actually closed
+            while [[ "$(pstree -tc $ALSA_PROC | grep SDLHotplugALSA)" != "" ]]; do
+              sleep 0.1
+            done
+          fi
+          # then safe to stop the entire group
           sudo kill -STOP "-${PGIDS[$ACTIVE_SESSION]}"
           # restore the console binding for Kodi
           echo 0 >/sys/class/vtconsole/vtcon1/bind
@@ -431,10 +418,7 @@ while true; do
         # restore the TV mode for Kodi
         setMode ${CEA[$ACTIVE_SESSION]}
 
-        # disconnect emulators from the ALSA device to avoid blocking Kodi from it - also hides it as an option
-        [[ "$SPEED" == "fast" ]] && pulseAudio hide
-
-        # exit methods no longer required
+        # stop exit methods
         systemctl stop cec-exit
         systemctl stop evdev-exit
 
@@ -447,7 +431,9 @@ while true; do
         if [[ "${PGIDS[0]}" == "null" ]]; then
           systemctl start mediacenter
         else
+          sleep 1
           sudo kill -CONT "-${PGIDS[0]}"
+          kodi-send -a 'RunAddon(script.launch.retropie)'
         fi
 
       else
