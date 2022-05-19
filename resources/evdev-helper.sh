@@ -99,7 +99,7 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
     # in Retropie controls must pass to the emulator uninterrupted
     grab=""
   else
-    echo "Bad SUBMODE: $SUBMODE" >> /home/osmc/evdev-helper.log
+    echo "evdev-helper($$): Bad SUBMODE: $SUBMODE" >> /home/osmc/evdev.log
   fi
 
   # The method is to detect the 2 buttons being in a pressed state HOT + EXIT = SET, in whatever order (same as Retroarch actually)
@@ -110,7 +110,7 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
   EXIT=0
   SET=0
 
-  evtest $grab "/dev/input/by-id/$GAMEPAD" | while read line; do
+  while read line; do
     btncode=$(echo $line | grep EV_KEY | cut -d ")" -f2 | cut -d "(" -f2 )
 
     if [[ "$btncode" == "$HOTKEY" ]]; then
@@ -137,9 +137,8 @@ elif [[ "$MODE" == "CATCHCOMBO" ]]; then
         killThreads "EXIT"
       fi
     fi
-  done
-
+  done < <(evtest $grab "/dev/input/by-id/$GAMEPAD")
 
 else
-  echo "Bad MODE: $MODE" >> /home/osmc/evdev-helper.log
+  echo "evdev-helper($$): Bad MODE: $MODE" >> /home/osmc/evdev.log
 fi
