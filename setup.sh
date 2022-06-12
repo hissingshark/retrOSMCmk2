@@ -258,7 +258,7 @@ function patchRetroPie() {
 
   # PATCH R23V3
   # hold SDL2 version for our downloads
-  sed -i '/local ver="$(get_ver_sdl2)+/s/+./+5/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/local ver="$(get_ver_sdl2)+/s/+.*"/+5"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
   # No more patches affecting RPi
@@ -281,7 +281,7 @@ function patchRetroPie() {
 
   # PATCH V2
   # build SDL2 from our custom fork on Vero4K due to fast switching fixes
-  sed -i '/https:\/\/github.com\/RetroPie\/SDL-mirror/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/https:\/\/github.com\/RetroPie\/SDL/s/RetroPie/hissingshark/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
   # PATCH V3
   # fix 4k/4K+ platform identification under new and old kernels
