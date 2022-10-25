@@ -127,7 +127,10 @@ trap cleanUp 15
 
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
-  sudo -u osmc mkfifo $FIFO
+  # Recent kernels (4.19+) "disallow open of FIFOs ... not owned by the user in
+  #   world writable sticky directories"
+  # See https://kernelnewbies.org/Linux_4.19#Security
+  sudo mkfifo -m 660 $FIFO && sudo chown root:osmc $FIFO
 fi
 
 while true; do
