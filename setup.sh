@@ -504,7 +504,9 @@ fi
 
 # setup FIFO for communication
 if [[ ! -p $FIFO ]]; then
-  sudo -u osmc mkfifo $FIFO
+  sudo mkfifo -m 660 $FIFO && sudo chown root:osmc $FIFO
+else
+  sudo chmod 660 $FIFO && sudo chown root:osmc $FIFO
 fi
 
 # Adapted from the RetroPie platform detection
