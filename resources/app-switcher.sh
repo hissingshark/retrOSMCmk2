@@ -321,7 +321,7 @@ while true; do
           PGIDS[0]="null"
         elif [[ "$SPEED" == "fast" ]]; then
           PGIDS[0]=$(ps xao pgid,comm | grep -m 1 "kodi.bin" | sed -e 's/^[[:space:]]*//' | cut -d ' ' -f1 | tr -d ' ')
-          sudo kill -STOP "-${PGIDS[0]}"
+          kill -STOP "-${PGIDS[0]}"
           # console normally unbound when Kodi exits - without it there's no runcommand.sh console menu
           echo 1 >/sys/class/vtconsole/vtcon1/bind
         else
@@ -375,7 +375,7 @@ while true; do
           setMode ${CEA[$REQUESTED_SESSION]}
           # minimise any audio crackle on resuming PA
           sleep 0.5
-          sudo kill -CONT "-${PGIDS[$REQUESTED_SESSION]}"
+          kill -CONT "-${PGIDS[$REQUESTED_SESSION]}"
         fi
 
       elif [[ "$DESTINATION" == "mc" ]]; then
@@ -402,14 +402,14 @@ while true; do
           # halt session
           # send signal to shutdown audio (only if it has an SDL audio thread)
           if [[ "$(pstree -tc $ALSA_PROC | grep SDLHotplugALSA)" != "" ]]; then
-            sudo kill -USR1 $ALSA_PROC
+            kill -USR1 $ALSA_PROC
             # wait until that process's ALSA thread has actually closed
             while [[ "$(pstree -tc $ALSA_PROC | grep SDLHotplugALSA)" != "" ]]; do
               sleep 0.1
             done
           fi
           # then safe to stop the entire group
-          sudo kill -STOP "-${PGIDS[$ACTIVE_SESSION]}"
+          kill -STOP "-${PGIDS[$ACTIVE_SESSION]}"
           # restore the console binding for Kodi
           echo 0 >/sys/class/vtconsole/vtcon1/bind
         else
@@ -435,7 +435,7 @@ while true; do
           systemctl start mediacenter
         else
           sleep 1
-          sudo kill -CONT "-${PGIDS[0]}"
+          kill -CONT "-${PGIDS[0]}"
           kodi-send -a 'RunAddon(script.launch.retropie)'
         fi
 
