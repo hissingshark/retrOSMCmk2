@@ -258,8 +258,8 @@ function patchRetroPie() {
 
   # PATCH R23V3
   # hold SDL2 version for our downloads
-  sed -i '/local ver="$(get_ver_sdl2)+/s/+.*"/+5"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
-  sed -i '/function get_ver_sdl2() {/,/}/s/".*"/"2.0.10"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/function get_ver_sdl2() {/,/}/s/echo ".*"/echo "2.0.20"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
+  sed -i '/function get_pkg_ver_sdl2() {/,/}/s/"+.*"/"+1"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
   # No more patches affecting RPi
   [[ "$platform" == rpi* ]] && return 0
