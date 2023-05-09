@@ -633,12 +633,9 @@ elif MODE == "UPDATE":
     # this is for manual checks initiated from the settings menu
     allow_notifications = "true"
     dialog.notification("retrOSMCmk2", "Checking for updates now...", xbmcgui.NOTIFICATION_INFO, 1500)
-    # recruit the script of the update-checking service
-    subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"])
-    # obtain latest changelog
-    os.system('echo "changelog read" > %s' % (SWITCHER_FIFO))
-    time.sleep(0.1)
-    changelog = read_FIFO(SWITCHER_FIFO)
+    # recruit the script of the update-checking service to obtain latest changelog
+    uc = subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"], capture_output=True, encoding="utf-8", text=True)
+    changelog = uc.stdout
     if changelog == "":
       dialog.ok("retrOSMCmk2", "No updates available.")
     else:
@@ -656,14 +653,14 @@ elif MODE == "UPDATE":
 
     # obtain latest changelog if we haven't manually checked already
     if changelog == "null":
-      os.system('echo "changelog read" > %s' % (SWITCHER_FIFO))
-      time.sleep(0.1)
-      changelog = read_FIFO(SWITCHER_FIFO)
+      uc = subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"], capture_output=True, encoding="utf-8", text=True)
+      changelog = uc.stdout
 
     # force urgent update notifications
     if changelog.count("URGENT"):
       allow_notifications = "true"
       changelog_date = date.today() - timedelta(days=int(reminder_delay))
+
     # no need to proceed if notifications are still muted
     if allow_notifications == "false":
       exit()

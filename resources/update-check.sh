@@ -12,10 +12,14 @@ git fetch
 # check if the local copy is behind upstream
 behind=$(git status | grep Your | grep behind | sed 's/^.*by //' | sed 's/ .*//')
 
-if [[ "$behind" != "" ]]; then
-  # start to compose FIFO message
-  msg="changelog write "
-
+if [[ "$behind" == "" ]]; then
+  # nothing to do
+  echo ""
+elif [[ "$mode" != "manual" ]]; then
+    # notify Kodi user of available updates via an addon popup
+    kodi-send --action='RunScript("script.launch.retropie", UPDATE, NOTIFY)'
+else
+  # compose changelog message
   # extract the outstanding commit history
   readarray log <<< $(git log --oneline -$behind origin/master)
 
@@ -30,15 +34,6 @@ if [[ "$behind" != "" ]]; then
     changelog+=$formatted
   done
 
-  msg+="$changelog"
-
-  # send changelog to the app-switcher
-  echo "$msg" > /tmp/app-switcher.fifo
-
-  # notify Kodi user via addon popup
-  [[ "$mode" == "manual" ]] || kodi-send --action='RunScript("script.launch.retropie", UPDATE, NOTIFY)'
-else
-  # clear any stale changelog from the app-switcher
-  echo "changelog clear" > /tmp/app-switcher.fifo
-  # exit silently (addon handles manual checks with no available updates)
+  # return changelog via stdout
+  echo "$changelog"
 fi
