@@ -508,8 +508,8 @@ elif MODE == "EVDEV":
     dialog.textviewer("Program Exit Buttons", "These will work like RetroPie.\n\nYou configure a hotkey enable button and an exit button.  For example to exit back to Emulationstation most people are configured to hold down \"select\" and press \"start\".\n\nThe enable button could be the same as RetroPie, but the switch button MUST NOT ALREADY BE ASSIGNED to anything else in RetroPie e.g. exit, reset, save/load gamestate.\n\nProgramming instructions\n1. Press OK\n2. When requested press the hotkey enable button on the gamepad.\n3. Then when requested press the gamepad button you will use for the switching function.")
 
     # collect controller name and hotkey enable button
-    subprocess.Popen([EVHELPER, "SCANMULTI"])
     dialog.notification("Program Exit Buttons", "Press hotkey enable button...", xbmcgui.NOTIFICATION_INFO, 3000)
+    subprocess.run([EVHELPER, "SCANMULTI"])
     msg = read_FIFO(EVDEV_FIFO)
     # validate output = gamepad-id:button-id
     gamepad = msg.split(':', 1)[0]
@@ -518,8 +518,8 @@ elif MODE == "EVDEV":
     time.sleep(3)
 
     # collect exit button for the same controller
-    subprocess.Popen([EVHELPER, "SCANSINGLE", gamepad, "PARENT"])
     dialog.notification("Program Exit Buttons", "Press exit button...", xbmcgui.NOTIFICATION_INFO, 3000)
+    subprocess.run([EVHELPER, "SCANSINGLE", gamepad, "PARENT"])
     msg = read_FIFO(EVDEV_FIFO)
     # validate output - gamepad id, button id
     if not msg.split(':', 1)[0] == gamepad:
@@ -555,8 +555,8 @@ elif MODE == "EVDEV":
       dialog.ok("Test Exit Buttons", "1. Press OK\n\n2. On the gamepad hold the hotkey enable button, then press the exit button.")
 
       # test exit button combination
-      subprocess.Popen([EVHELPER, "CATCHCOMBO", "TEST", gamepad, hotbtncode, exitbtncode])
       dialog.notification("Testing Exit Buttons", "Press exit combination...", xbmcgui.NOTIFICATION_INFO, 3000)
+      subprocess.run([EVHELPER, "CATCHCOMBO", "TEST", gamepad, hotbtncode, exitbtncode])
       msg = read_FIFO(EVDEV_FIFO)
       if msg == "EXIT":
         dialog.ok("Test Exit Buttons", "Exit combination detected correctly!")
@@ -569,17 +569,15 @@ elif MODE == "EVDEV":
 elif MODE == "RES":
   if SUBMODE == "PROGRAM":
     # obtain current video mode number
-    tvs_proc = subprocess.Popen([TVSERVICE, "-s"], stdout=subprocess.PIPE, encoding="utf-8", text=True)
-    so, se = tvs_proc.communicate()
-    current_mode = so.split('(', 1)[1].split(')')[0]
+    tvs_proc = subprocess.run([TVSERVICE, "-s"], capture_output=True, encoding="utf-8", text=True)
+    current_mode = tvs_proc.stdout.split('(', 1)[1].split(')')[0]
     chosen_mode = resolution # from config
 
     # obtain available modes
     mode_refs = []
-    tvs_proc = subprocess.Popen([TVSERVICE, "-m","CEA"], stdout=subprocess.PIPE, encoding="utf-8", text=True)
-    so, se = tvs_proc.communicate()
+    tvs_proc = subprocess.run([TVSERVICE, "-m","CEA"], capture_output=True, encoding="utf-8", text=True)
     # newline seperated list
-    available_modes = so.split("\n")
+    available_modes = tvs_proc.stdout.split("\n")
     # remove first title line and last blank line
     available_modes.pop(0)
     available_modes.pop(len(available_modes)-1)
@@ -609,10 +607,9 @@ elif MODE == "RES":
     # test mode for 5s
     dialog.ok("Mode Test", "The selected mode will now be displayed for 5 seconds just to confirm it works, but the display will likely be zoomed")
     cmd_str = '%s -e "CEA %s"' % (TVSERVICE, mode_refs[chosen_mode])
-    tvs_proc = subprocess.Popen(cmd_str, universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    subprocess.run(cmd_str, shell=True)
     time.sleep(7)
-    cmd_str = '%s -e "CEA %s"' % (TVSERVICE, current_mode)
-    tvs_proc = subprocess.Popen(cmd_str, universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+    subprocess.run(cmd_str, shell=True)
 
     # save config if acceptable
     keep = dialog.yesno("Mode Test", "Keep that mode for launching Emulationstation?")
@@ -637,8 +634,7 @@ elif MODE == "UPDATE":
     allow_notifications = "true"
     dialog.notification("retrOSMCmk2", "Checking for updates now...", xbmcgui.NOTIFICATION_INFO, 1500)
     # recruit the script of the update-checking service
-    uc = subprocess.Popen("/home/osmc/RetroPie/scripts/update-check.sh manual", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
-    uc.wait()
+    subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"])
     # obtain latest changelog
     os.system('echo "changelog read" > %s' % (SWITCHER_FIFO))
     time.sleep(0.1)
@@ -685,7 +681,7 @@ elif MODE == "UPDATE":
         dialog.ok("retrOSMCmk2", "Reminder:\n\nURGENT updates to the addon are available.")
         view = True
       else:
-        view = dialog.yesno("retrOSMCmk2", "Reminder:", "Outstanding updates to the addon are available.\n\n", "View changelog or Ignore it again for now?", "Ignore", "View")
+        view = dialog.yesno("retrOSMCmk2", "Reminder:\n\nOutstanding updates to the addon are available.\n\nView changelog or Ignore it again for now?", "Ignore", "View")
     else:
     # or a new update to be stored
       data.find("changelog-date").text = today.isoformat()
@@ -694,7 +690,7 @@ elif MODE == "UPDATE":
         dialog.ok("retrOSMCmk2", "\nURGENT updates to the addon are available.")
         view = True
       else:
-        view = dialog.yesno("retrOSMCmk2", "An new update to the addon is available.\n", "\n", "View changelog or Ignore it for now?", "Ignore", "View")
+        view = dialog.yesno("retrOSMCmk2", "An new update to the addon is available.\n\nView changelog or Ignore it for now?", "Ignore", "View")
 
 # TODO why are settings and data handled differently in Tree?  And lets get a setting function written!
 
@@ -720,12 +716,11 @@ elif MODE == "UPDATE":
         changelog = changelog.replace("<ENTRY>", "\n\n[COLOR white]%d.[/COLOR] " % (line), 1)
 
       dialog.textviewer("retrOSMCmk2", "Changelog:%s" % (changelog))
-      update = dialog.yesno("retrOSMCmk2", "Install the update or Ignore it for now?", "\n", "\n", "Ignore", "Install")
+      update = dialog.yesno("retrOSMCmk2", "Install the update or Ignore it for now?", "Ignore", "Install")
       if update == True:
-        dialog.notification("retrOSMCmk2", "Updating now...", xbmcgui.NOTIFICATION_INFO, 10000)
-        ur = subprocess.Popen("sudo /home/osmc/retrOSMCmk2/setup.sh UPDATE", universal_newlines=True, stdout=subprocess.PIPE, shell=True)
+        dialog.notification("retrOSMCmk2", "Updating now...", xbmcgui.NOTIFICATION_INFO, 15000)
         xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
-        ur.wait()
+        ur = subprocess.run(["sudo", "/home/osmc/retrOSMCmk2/setup.sh", "UPDATE"])
         xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
         if ur.returncode != 0:
           # Error with the update process
