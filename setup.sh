@@ -26,12 +26,13 @@ reinstall_sdl2=0
 # perform initial installation
 function firstTimeSetup() {
   # get dependancies
-  echo -e "\nFirst time setup:\n\nInstalling required dependancies..."
+  echo -e "\nFirst time setup:\n\nInstalling required dependencies..."
   depends=(dialog evtest git zip gpg)
   if [[ "$platform" == rpi* ]]; then
     depends+=(alsa-utils)
   fi
   apt-get install -y "${depends[@]}" || { echo "FAILED!"; exit 1; }
+  gpg --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys DC9D77FF8208FFC51D8F50CCF1B030906A3B0D31 || { echo "FAILED!"; exit 1; }
   clear
   dialog \
     --backtitle "$BACKTITLE" \
