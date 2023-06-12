@@ -45,23 +45,23 @@ msgid "Gamepad Exit"
 msgstr ""
 
 msgctxt "#32020"
-msgid "Configure a gamepad button to exit RetroPie"
+msgid "Configure gamepad buttons to exit RetroPie"
 msgstr ""
 
 msgctxt "#32021"
-msgid "Enable exit button"
+msgid "Enable exit buttons"
 msgstr ""
 
 msgctxt "#32022"
-msgid "Program button code"
+msgid "Program button codes"
 msgstr ""
 
 msgctxt "#32023"
-msgid "View current button code"
+msgid "View current button codes"
 msgstr ""
 
 msgctxt "#32024"
-msgid "Test exit button"
+msgid "Test exit buttons"
 msgstr ""
 
 msgctxt "#32004"
@@ -78,10 +78,6 @@ msgstr ""
 
 msgctxt "#32042"
 msgid "Unfortunately this option is presently unavailable on the RPi"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Remove PulseAudio"
 msgstr ""
 
 msgctxt "#32003"

@@ -20,7 +20,7 @@
     <category label="32005">
         <setting label="32050" type="lsep"/>
         <setting label="32051" type="bool" id="tv-mode" default="false"/>
-        <setting label="32052" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, RES, PROGRAM)"/>
+        <setting label="32052" subsetting="true" type="action" enable="eq(-1,true)" action="RunScript(/home/osmc/.kodi/addons/script.launch.retropie/addon.py, DISPMOD, PROGRAM)"/>
     </category>
     <category label="32006">
         <setting label="32060" type="lsep"/>

@@ -18,49 +18,49 @@ def cec_client(mode):
   global cecc_proc
   global cecc_iter
 
-  if mode == "START":
+  if mode == 'START':
     cecc_proc = subprocess.Popen(CLIENT, stdout=subprocess.PIPE, universal_newlines=True)
-    cecc_iter = iter(cecc_proc.stdout.readline, "")
-  elif mode == "STOP":
+    cecc_iter = iter(cecc_proc.stdout.readline, '')
+  elif mode == 'STOP':
     cecc_proc.terminate()
-  elif mode == "CODE":
+  elif mode == 'CODE':
     while True:
       line = next(cecc_iter)
-      if all(["TRAFFIC" in line, ">>" in line]): # looking for key code
+      if all(['TRAFFIC' in line, '>>' in line]): # looking for key code
         # extract inbound CEC frame
-        keycode = line.split(">>")[-1].strip()
+        keycode = line.split('>>')[-1].strip()
         # ignore key release code that spams the output
-        if keycode == "01:45":
+        if keycode == '01:45':
           continue
         else:
           return keycode
-  elif mode == "DESC":
+  elif mode == 'DESC':
     while True:
       line = next(cecc_iter)
-      if "TRAFFIC" in line:
+      if 'TRAFFIC' in line:
         return "No description available"
-      elif all(["DEBUG" in line, "key pressed:" in line]):
-        return "%s)" % (line.split("key pressed:")[-1].strip().split(")")[0])
+      elif all(['DEBUG' in line, 'key pressed:' in line]):
+        return "%s)" % (line.split('key pressed:')[-1].strip().split(')')[0])
 
 
 # blocks Kodi response to main remote navigation buttons
 def remote_jammer(toggle):
-  if toggle == "START": # disable common navigation buttons on the remote, to avoid GUI conflict during the mapping
+  if toggle == 'START': # disable common navigation buttons on the remote, to avoid GUI conflict during the mapping
     # hide an existing user keymap
     if os.path.exists(REMOTE):
       copyfile(REMOTE, HIDDEN)
     # replace with a preset NOOP config to disable to buttons
     copyfile(HOBBLE, REMOTE)
-    xbmc.executebuiltin("Action(reloadkeymaps)")
+    xbmc.executebuiltin('Action(reloadkeymaps)')
 
-  elif toggle == "STOP": # re-enable the back button
+  elif toggle == 'STOP': # re-enable the back button
     if os.path.exists(HIDDEN):
       copyfile(HIDDEN, REMOTE)
       os.remove(HIDDEN)
     else:
       os.remove(REMOTE)
 
-    xbmc.executebuiltin("Action(reloadkeymaps)")
+    xbmc.executebuiltin('Action(reloadkeymaps)')
   return
 
 
@@ -73,40 +73,46 @@ def read_FIFO(path):
       for line in fifo:
         line = line.rstrip()
 
-        if line == "NOPADS":
+        if line == 'NOPADS':
           dialog.ok("Program Exit Buttons", "No gamepads detected!")
           exit()
-        elif line == "TIMEOUT":
-          if SUBMODE == "PROGRAM":
+        elif line == 'TIMEOUT':
+          if SUBMODE == 'PROGRAM':
             dialog.ok("Program Exit Buttons", "No button pressed!")
           else:
             dialog.ok("Test Exit Buttons", "Did not detect exit combination!")
           exit()
         elif ':' in line:
           return line
-        elif line == "0":
+        elif line == '0':
           return line
-        elif line == "EXIT":
+        elif line == 'EXIT':
           return line
-        elif "<ENTRY>" in line:
+        elif '<ENTRY>' in line:
           return line
         else:
           return line
 
 # confirms that Kodi is not currently playing, gaming or scraping
 def kodi_is_idle():
-  if xbmc.getCondVisibility("Player.Playing"):
+  if xbmc.getCondVisibility('Player.Playing'):
     return False
-  elif xbmc.getCondVisibility("Player.Paused"):
+  elif xbmc.getCondVisibility('Player.Paused'):
     return False
-  elif xbmc.getCondVisibility("Player.HasGame"):
+  elif xbmc.getCondVisibility('Player.HasGame'):
     return False
-  elif xbmc.getCondVisibility("Library.IsScanningMusic"):
+  elif xbmc.getCondVisibility('Library.IsScanningMusic'):
     return False
-  elif xbmc.getCondVisibility("Library.IsScanningVideo"):
+  elif xbmc.getCondVisibility('Library.IsScanningVideo'):
     return False
   else:
     return True
+
+# saves XML tree to path and beautifies it
+def saveXML(path, data):
+  tree = ET.ElementTree(data)
+  tree.write(path, encoding='utf-8', method='xml')
+  subprocess.run([PRETTYXML, 'ed', '-L', path])
 
 #
 # class for GUI
@@ -221,7 +227,7 @@ class slotManager(pyxbmct.AddonDialogWindow):
     def setTargetSlot(self):
       global fast_switching
       global target_slot
-      if (fast_switching == "false" and self.slot > 0):
+      if (fast_switching ==  'false' and self.slot > 0):
         # disable launch of slots in "slow mode"
         dialog.ok("App-Switching", "Please re-enable \"fast switching\" to access paused slots.")
       elif kodi_is_idle():
@@ -256,109 +262,117 @@ class slotManager(pyxbmct.AddonDialogWindow):
 
     def openSettings(self):
       self.parent.close()
-      xbmc.executebuiltin("Addon.openSettings(script.launch.retropie)")
+      xbmc.executebuiltin('Addon.openSettings(script.launch.retropie)')
 
 #
 # EXECUTION STARTS HERE
 #
 
 # init constant paths
-CLIENT="/usr/osmc/bin/cec-client"
-EVHELPER="/home/osmc/RetroPie/scripts/evdev-helper.sh"
-TVSERVICE="/home/osmc/RetroPie/scripts/tvservice-shim.sh"
-DATA="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/data.xml"
-HIDDEN="/home/osmc/.kodi/userdata/keymaps/remote.xml.hidden"
-HOBBLE="/home/osmc/.kodi/addons/script.launch.retropie/resources/data/hobble.xml"
-REMOTE="/home/osmc/.kodi/userdata/keymaps/remote.xml"
-SETTINGS="/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml"
-EVDEV_FIFO="/tmp/evdev-exit.fifo"
-SWITCHER_FIFO="/tmp/app-switcher.fifo"
+CLIENT='/usr/osmc/bin/cec-client'
+EVHELPER='/home/osmc/RetroPie/scripts/evdev-helper.sh'
+TVSERVICE='/home/osmc/RetroPie/scripts/tvservice-shim.sh'
+DATA='/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/data.xml'
+HIDDEN='/home/osmc/.kodi/userdata/keymaps/remote.xml.hidden'
+HOBBLE='/home/osmc/.kodi/addons/script.launch.retropie/resources/data/hobble.xml'
+REMOTE='/home/osmc/.kodi/userdata/keymaps/remote.xml'
+SETTINGS='/home/osmc/.kodi/userdata/addon_data/script.launch.retropie/settings.xml'
+EVDEV_FIFO='/tmp/evdev-exit.fifo'
+SWITCHER_FIFO='/tmp/app-switcher.fifo'
 MAX_SLOTS=9
+PRETTYXML='/usr/bin/xmlstarlet'
 
 # init dialog handle for all settings related popups
 dialog = xbmcgui.Dialog()
-cecc_proc = ""
-cecc_iter = ""
+cecc_proc = ''
+cecc_iter = ''
 
-
-# load data file/tree
-try: # read in the data file
+# load, check and repair data file/tree
+try: # check file exists
   data_file = ET.parse(DATA)
-  data = data_file.getroot()
-except (IOError, AttributeError): # no file or corrupt
-  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (DATA), level=xbmc.LOGINFO)
-  # create temporary default tree
-  data = ET.Element("data")
-
-# parse the elements, defaulting and repairing if missing
-try:
-  keycode = data.find("keycode").text
-except (AttributeError): # missing element
-  keycode = "No keycode set yet!"
-  ET.SubElement(data, "keycode").text = keycode
-try:
-  keydesc = data.find("keydesc").text
-except (AttributeError):
-  keydesc = "Use the \"Program exit key\" option above."
-  ET.SubElement(data, "keydesc").text = keydesc
-try:
-  gamepad = data.find("gamepad").text
-except (AttributeError):
-  gamepad = "Setup still required:"
-  ET.SubElement(data, "gamepad").text = gamepad
-try:
-  hotbtncode = data.find("hotbtncode").text
-except (AttributeError):
-  hotbtncode = "No button code set yet!"
-  ET.SubElement(data, "hotbtncode").text = hotbtncode
-try:
-  exitbtncode = data.find("exitbtncode").text
-except (AttributeError):
-  exitbtncode = "Use the \"Program exit key\" option above."
-  ET.SubElement(data, "exitbtncode").text = exitbtncode
-try:
-  resolution = data.find("resolution").text
-except (AttributeError):
-  resolution = "0"
-  ET.SubElement(data, "resolution").text = resolution
-try:
-  pending_changelog = data.find("pending-changelog").text
-except (AttributeError):
-  pending_changelog = ""
-  ET.SubElement(data, "pending-changelog").text = pending_changelog
-try:
-  cld = data.find("changelog-date").text
-except (AttributeError):
-  cld = date.today().isoformat() # intialize arbitrarily to today's date
-  ET.SubElement(data, "changelog-date").text = cld
+except (IOError, ET.ParseError): # no file or tree
+  data_file = None
+  xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
+try: # check for root
+  Edata = data_file.getroot()
+except (AttributeError, ET.ParseError): # no file or corrupt
+  Edata = ET.Element('data')
+  xbmc.log("retrOSMCmk2 Launcher: <data> missing from \"%s\" on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
 finally:
-  clda = cld.split("-")
+  if Edata.tag != 'data': # check root is data
+    Edata = ET.Element('data')
+
+# check for each tag, loading the values or creating defaults accordingly
+# CEC
+Ecec = Edata.find('cec')
+if Ecec == None:
+  Ecec = ET.SubElement(Edata, 'cec')
+  keycode = "No keycode set yet!"
+  Ecec.set('keycode', keycode)
+  keydesc = "Use the \"Program exit key\" option above."
+  Ecec.set('keydesc', keydesc)
+  xbmc.log("retrOSMCmk2 Launcher: <cec> missing from \"%s\"on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
+else:
+  keycode = Ecec.get('keycode')
+  keydesc = Ecec.get('keydesc')
+# EVDEV
+Eevdev = Edata.find('evdev')
+gamepads = []
+if Eevdev == None:
+  Eevdev = ET.SubElement(Edata, 'evdev')
+  xbmc.log("retrOSMCmk2 Launcher: <evdev> missing from \"%s\"on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
+else:
+  gamepads = Eevdev.findall('gamepad')
+# DISPLAY
+Edisp = Edata.find('display')
+if Edisp == None:
+  Edisp = ET.SubElement(Edata, 'display')
+  Edisp.set('mode', '0')
+  dispmod = 0
+  xbmc.log("retrOSMCmk2 Launcher: <display> missing from \"%s\"on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
+else:
+  dispmod = Edisp.get('mode')
+# UPDATE
+Eupdate = Edata.find('update')
+if Eupdate == None:
+  Eupdate = ET.SubElement(Edata, 'update')
+  pending_changelog = ''
+  Eupdate.set('pending-changelog', pending_changelog)
+  changelog_date = date.today() # intialize arbitrarily to today's date
+  Eupdate.set('changelog-date', changelog_date.isoformat())
+  xbmc.log("retrOSMCmk2 Launcher: <update> missing from \"%s\"on this run.  Generating a default." % (DATA), level=xbmc.LOGINFO)
+else:
+  pending_changelog = Eupdate.get('pending-changelog')
+  changelog_date = Eupdate.get('changelog-date')
+  clda = changelog_date.split("-")
   changelog_date = date(int(clda[0]), int(clda[1]), int(clda[2]))
+
+saveXML(DATA, Edata)
 
 # load addon settings
 # set defaults
-cec_exit = "false"
-evdev_exit = "false"
-fast_switching = "false"
-tv_mode = "false"
-reminder_delay = "3"
-allow_notifications = "true"
+cec_exit = 'false'
+evdev_exit = 'false'
+fast_switching = 'false'
+tv_mode = 'false'
+reminder_delay = '3'
+allow_notifications = 'true'
 
 try:
   settings_file = ET.parse(SETTINGS)
   settings = settings_file.getroot()
   for setting in settings:
-    if setting.get("id") == "cec-exit":
+    if setting.get('id') == 'cec-exit':
       cec_exit = setting.text
-    elif setting.get("id") == "evdev-exit":
+    elif setting.get('id') == 'evdev-exit':
       evdev_exit = setting.text
-    elif setting.get("id") == "fast-switching":
+    elif setting.get('id') == 'fast-switching':
       fast_switching = setting.text
-    elif setting.get("id") == "tv-mode":
+    elif setting.get('id') == 'tv-mode':
       tv_mode = setting.text
-    elif setting.get("id") == "reminder-delay":
+    elif setting.get('id') == 'reminder-delay':
       reminder_delay = setting.text
-    elif setting.get("id") == "allow-notifications":
+    elif setting.get('id') == 'allow-notifications':
       allow_notifications = setting.text
 except (IOError, AttributeError): # no file or corrupt so leave blank
   xbmc.log("retrOSMCmk2 Launcher: \"%s\" missing or corrupt on this run" % (SETTINGS), level=xbmc.LOGINFO)
@@ -373,7 +387,7 @@ if len(sys.argv) > 1:
 # default action = launch ES +/- fast switch +/- CEC exit button +/- disable Kodi exit signals
 else:
   # configure go button for menu
-  if (fast_switching == "true"):
+  if (fast_switching == 'true'):
     go_button = 'Start New Session'
   else:
     go_button = 'Launch!'
@@ -382,7 +396,7 @@ else:
   pyxbmct.skin.estuary = False # go retro - obviously!
 
   # get currently active slots from app-switcher via FIFO
-  os.system('echo "dump" > %s' % (SWITCHER_FIFO))
+  os.system('echo "dump" > %s ' % (SWITCHER_FIFO))
   time.sleep(0.1) # don't want to read our own request from the FIFO!
   msg = read_FIFO(SWITCHER_FIFO)
 
@@ -414,23 +428,23 @@ else:
     exit() # backed out of session manager without choosing anything
 
   # something to look at whilst Kodi is shutting down
-  if (fast_switching == "false"):
-    xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
+  if (fast_switching == 'false'):
+    xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
 
   # start the CEC exit button watchdog?
-  if cec_exit == "true":
+  if cec_exit == 'true':
     os.system('systemctl start cec-exit')
 
   # start the evdev exit button watchdog?
-  if evdev_exit == "true":
+  if evdev_exit == 'true':
     os.system('systemctl start evdev-exit')
 
   # switch TV mode at launch?
-  if (tv_mode == "false"):
+  if (tv_mode == 'false'):
     resolution = 0
 
   # launch Emulationstation +/- fast switching which is needed to block CEC shutdown signals too
-  if (fast_switching == "true"):
+  if (fast_switching == 'true'):
     os.system('echo "switch es fast %s %s" >/tmp/app-switcher.fifo' % (target_slot, resolution))
   else:
     os.system('echo "switch es slow 0 %s" >/tmp/app-switcher.fifo' % (resolution))
@@ -440,49 +454,46 @@ else:
 
 # if we are here then it wasn't a launch, but a request from the settings menu
 # parse arguments for required mode
-if MODE == "CEC":
-  if SUBMODE == "PROGRAM":
+if MODE == 'CEC':
+  if SUBMODE == 'PROGRAM':
     dialog.ok("Program Exit Key", "1. Press OK\n\n2. Repeatedly press the button on your TV remote that you want to exit RetroPie.")
-    remote_jammer("START")
-    cec_client("START")
+    remote_jammer('START')
+    cec_client('START')
     dialog.notification("CEC-client", "listening...", xbmcgui.NOTIFICATION_INFO, 1000)
 
     # collect 2 presses of the same key and the description that follows if it exists
     keys = [keycode]
     while not keys.count(keys[-1]) == 2:
-      keys.append(cec_client("CODE"))
+      keys.append(cec_client('CODE'))
 
     keycode = keys[-1]
-    keydesc = cec_client("DESC")
+    keydesc = cec_client('DESC')
 
     # write out addon data.xml
-    data.find("keycode").text = keycode
-    data.find("keydesc").text = keydesc
-    xmlstr = ET.tostring(data).decode()
-    newxml = MD.parseString(xmlstr)
-    with open(DATA,"w+") as outfile:
-        outfile.write(newxml.toprettyxml(indent="",newl=""))
+    Ecec.set('keycode', keycode)
+    Ecec.set('keydesc', keydesc)
+    saveXML(DATA, Edata)
 
-    cec_client("STOP")
-    remote_jammer("STOP")
+    cec_client('STOP')
+    remote_jammer('STOP')
     dialog.ok("CEC-client", "Keycode = %s\nDescription = %s" % (keycode, keydesc))
 
 
-  elif SUBMODE == "SETTING":
+  elif SUBMODE == 'SETTING':
     dialog.ok("Current CEC Keycode", "Code = %s\nDescription = %s" % (keycode, keydesc))
 
-  elif SUBMODE == "TEST":
+  elif SUBMODE == 'TEST':
     if keycode == "No keycode set yet!":
       dialog.ok("Test Exit Key", "Code = %s\nDescription = %s" % (keycode, keydesc))
     else:
       dialog.ok("Test Exit Key", "1. Press OK\n\n2. Repeatedly press the button on your TV remote that you have set to exit RetroPie.")
-      remote_jammer("START")
-      cec_client("START")
+      remote_jammer('START')
+      cec_client('START')
       dialog.notification("CEC-client", "listening...", xbmcgui.NOTIFICATION_INFO, 1000)
 
       attempts = 3
       for press in range(0, attempts):
-        if cec_client("CODE") == keycode:
+        if cec_client('CODE') == keycode:
           msg = "Correct keycode detected!"
           break
         elif press < (attempts - 1):
@@ -490,26 +501,26 @@ if MODE == "CEC":
         else:
           msg = "The programmed keycode was not detected..."
 
-      cec_client("STOP")
-      remote_jammer("STOP")
+      cec_client('STOP')
+      remote_jammer('STOP')
       dialog.ok("CEC-client", msg)
 
   else:
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
-elif MODE == "EVDEV":
+elif MODE == 'EVDEV':
   # helper will automatically grab the device when testing to avoid a clash with Kodi - no jammer needed here
 
   # ensure FIFO is in place for evdev-helper comms
   if not path.exists(EVDEV_FIFO):
     os.mkfifo(EVDEV_FIFO)
 
-  if SUBMODE == "PROGRAM":
+  if SUBMODE == 'PROGRAM':
     dialog.textviewer("Program Exit Buttons", "These will work like RetroPie.\n\nYou configure a hotkey enable button and an exit button.  For example to exit back to Emulationstation most people are configured to hold down \"select\" and press \"start\".\n\nThe enable button could be the same as RetroPie, but the switch button MUST NOT ALREADY BE ASSIGNED to anything else in RetroPie e.g. exit, reset, save/load gamestate.\n\nProgramming instructions\n1. Press OK\n2. When requested press the hotkey enable button on the gamepad.\n3. Then when requested press the gamepad button you will use for the switching function.")
 
     # collect controller name and hotkey enable button
     dialog.notification("Program Exit Buttons", "Press hotkey enable button...", xbmcgui.NOTIFICATION_INFO, 3000)
-    subprocess.run([EVHELPER, "SCANMULTI"])
+    subprocess.run([EVHELPER, 'SCANMULTI'])
     msg = read_FIFO(EVDEV_FIFO)
     # validate output = gamepad-id:button-id
     gamepad = msg.split(':', 1)[0]
@@ -519,7 +530,7 @@ elif MODE == "EVDEV":
 
     # collect exit button for the same controller
     dialog.notification("Program Exit Buttons", "Press exit button...", xbmcgui.NOTIFICATION_INFO, 3000)
-    subprocess.run([EVHELPER, "SCANSINGLE", gamepad, "PARENT"])
+    subprocess.run([EVHELPER, 'SCANSINGLE', gamepad, 'PARENT'])
     msg = read_FIFO(EVDEV_FIFO)
     # validate output - gamepad id, button id
     if not msg.split(':', 1)[0] == gamepad:
@@ -533,22 +544,22 @@ elif MODE == "EVDEV":
       exit()
 
     # write out addon data.xml
-    data.find("gamepad").text = gamepad
-    data.find("hotbtncode").text = hotbtncode
-    data.find("exitbtncode").text = exitbtncode
+    data.find('gamepad').text = gamepad
+    data.find('hotbtncode').text = hotbtncode
+    data.find('exitbtncode').text = exitbtncode
     xmlstr = ET.tostring(data).decode()
     newxml = MD.parseString(xmlstr)
-    with open(DATA,"w+") as outfile:
-        outfile.write(newxml.toprettyxml(indent="",newl=""))
+    with open(DATA,'w+') as outfile:
+        outfile.write(newxml.toprettyxml(indent='',newl=''))
 
     dialog.ok("New EVDEV Exit Settings", "Gamepad:\n%s\nHotkey enable button = %s\nExitkey enable button = %s" % (gamepad, hotbtncode, exitbtncode))
 
 
-  elif SUBMODE == "SETTING":
+  elif SUBMODE == 'SETTING':
     dialog.ok("Current EVDEV Exit Settings", "Gamepad:\n%s\nHotkey enable button = %s\nExitkey enable button = %s" % (gamepad, hotbtncode, exitbtncode))
 
 
-  elif SUBMODE == "TEST":
+  elif SUBMODE == 'TEST':
     if hotbtncode == "No button code set yet!":
       dialog.ok("Test Exit Buttons", "%s" % (hotbtncode))
     else:
@@ -556,28 +567,28 @@ elif MODE == "EVDEV":
 
       # test exit button combination
       dialog.notification("Testing Exit Buttons", "Press exit combination...", xbmcgui.NOTIFICATION_INFO, 3000)
-      subprocess.run([EVHELPER, "CATCHCOMBO", "TEST", gamepad, hotbtncode, exitbtncode])
+      subprocess.run([EVHELPER, 'CATCHCOMBO', 'TEST', gamepad, hotbtncode, exitbtncode])
       msg = read_FIFO(EVDEV_FIFO)
-      if msg == "EXIT":
+      if msg == 'EXIT':
         dialog.ok("Test Exit Buttons", "Exit combination detected correctly!")
-      elif msg == "TIMEOUT":
+      elif msg == 'TIMEOUT':
         dialog.ok("Test Exit Buttons", "Exit combination was not detected!")
 
   else:
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
-elif MODE == "RES":
-  if SUBMODE == "PROGRAM":
+elif MODE == 'DISPMOD':
+  if SUBMODE == 'PROGRAM':
     # obtain current video mode number
-    tvs_proc = subprocess.run([TVSERVICE, "-s"], capture_output=True, encoding="utf-8", text=True)
+    tvs_proc = subprocess.run([TVSERVICE, '-s'], capture_output=True, encoding='utf-8', text=True)
     current_mode = tvs_proc.stdout.split('(', 1)[1].split(')')[0]
-    chosen_mode = resolution # from config
+    chosen_mode = dispmod # from config
 
     # obtain available modes
     mode_refs = []
-    tvs_proc = subprocess.run([TVSERVICE, "-m","CEA"], capture_output=True, encoding="utf-8", text=True)
+    tvs_proc = subprocess.run([TVSERVICE, '-m','CEA'], capture_output=True, encoding='utf-8', text=True)
     # newline seperated list
-    available_modes = tvs_proc.stdout.split("\n")
+    available_modes = tvs_proc.stdout.split('\n')
     # remove first title line and last blank line
     available_modes.pop(0)
     available_modes.pop(len(available_modes)-1)
@@ -588,15 +599,14 @@ elif MODE == "RES":
       mode_refs.append(mode)
       # then  mark the active and selected
       if mode == chosen_mode:
-        available_modes[line] = available_modes[line] + "  <- SELECTED"
+        available_modes[line] = available_modes[line] + '  <- SELECTED'
       elif mode == current_mode:
-        available_modes[line] = available_modes[line] + "  <- ACTIVE"
+        available_modes[line] = available_modes[line] + '  <- ACTIVE'
       # remove leading "mode n: "
-      available_modes[line] = available_modes[line].split(": ")[1]
+      available_modes[line] = available_modes[line].split(': ')[1]
 
     # present list for user to select
     chosen_mode = dialog.select("Select TV mode for launch", available_modes)
-    xbmc.log(str(chosen_mode), level=xbmc.LOGINFO)
     # exit if nothing selected
     if chosen_mode == -1:
       exit()
@@ -615,54 +625,50 @@ elif MODE == "RES":
     keep = dialog.yesno("Mode Test", "Keep that mode for launching Emulationstation?")
     if keep == True:
       # write out addon data.xml
-      data.find("resolution").text = mode_refs[chosen_mode]
-# TODO move saving to a generic function
-      xmlstr = ET.tostring(data).decode()
-      newxml = MD.parseString(xmlstr)
-      with open(DATA,"w+") as outfile:
-          outfile.write(newxml.toprettyxml(indent="",newl=""))
+      Edisp.set('mode', mode_refs[chosen_mode])
+      saveXML(DATA, Edata)
 
   else:
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
-elif MODE == "UPDATE":
-  changelog = "null"
+elif MODE == 'UPDATE':
+  changelog = 'null'
   today = date.today()
 
-  if SUBMODE == "CHECK":
+  if SUBMODE == 'CHECK':
     # this is for manual checks initiated from the settings menu
-    allow_notifications = "true"
+    allow_notifications = 'true'
     dialog.notification("retrOSMCmk2", "Checking for updates now...", xbmcgui.NOTIFICATION_INFO, 1500)
     # recruit the script of the update-checking service to obtain latest changelog
-    uc = subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"], capture_output=True, encoding="utf-8", text=True)
+    uc = subprocess.run(['/home/osmc/RetroPie/scripts/update-check.sh', 'manual'], capture_output=True, encoding='utf-8', text=True)
     changelog = uc.stdout
-    if changelog == "":
+    if changelog == '':
       dialog.ok("retrOSMCmk2", "No updates available.")
     else:
       # reset timestamps to log the manual check and locally exceed delay to force notify
-      data.find("changelog-date").text = today.isoformat()
+      Eupdate.set('changelog-date', today.isoformat())
       changelog_date = date.today() - timedelta(days=int(reminder_delay))
       # fall-through to NOTIFY mode
-      SUBMODE = "NOTIFY"
+      SUBMODE = 'NOTIFY'
 
-  if SUBMODE == "NOTIFY":
+  if SUBMODE == 'NOTIFY':
     # updates must be available
     # check there is nothing being watched, to be less intrusive
     while not kodi_is_idle():
       time.sleep(30)
 
     # obtain latest changelog if we haven't manually checked already
-    if changelog == "null":
-      uc = subprocess.run(["/home/osmc/RetroPie/scripts/update-check.sh", "manual"], capture_output=True, encoding="utf-8", text=True)
+    if changelog == 'null':
+      uc = subprocess.run(['/home/osmc/RetroPie/scripts/update-check.sh', 'manual'], capture_output=True, encoding='utf-8', text=True)
       changelog = uc.stdout
 
     # force urgent update notifications
-    if changelog.count("URGENT"):
-      allow_notifications = "true"
+    if changelog.count('URGENT'):
+      allow_notifications = 'true'
       changelog_date = date.today() - timedelta(days=int(reminder_delay))
 
     # no need to proceed if notifications are still muted
-    if allow_notifications == "false":
+    if allow_notifications == 'false':
       exit()
 
     # check if this is a reminder of pending updates with no new changes in the log
@@ -673,17 +679,17 @@ elif MODE == "UPDATE":
         exit() # nothing to do
 
       # then remind user an update is available and present a changelog
-      data.find("changelog-date").text = today.isoformat()
-      if changelog.count("URGENT"):
+      Eupdate.set('changelog-date', today.isoformat())
+      if changelog.count('URGENT'):
         dialog.ok("retrOSMCmk2", "Reminder:\n\nURGENT updates to the addon are available.")
         view = True
       else:
         view = dialog.yesno("retrOSMCmk2", "Reminder:\n\nOutstanding updates to the addon are available.\n\nView changelog or Ignore it again for now?", "Ignore", "View")
     else:
     # or a new update to be stored
-      data.find("changelog-date").text = today.isoformat()
+      Eupdate.set('changelog-date', today.isoformat())
       # inform user an update is available and present a changelog
-      if changelog.count("URGENT"):
+      if changelog.count('URGENT'):
         dialog.ok("retrOSMCmk2", "\nURGENT updates to the addon are available.")
         view = True
       else:
@@ -692,10 +698,10 @@ elif MODE == "UPDATE":
 # TODO why are settings and data handled differently in Tree?  And lets get a setting function written!
 
     if view == True:
-      data.find("pending-changelog").text = changelog
+      Eupdate.set('pending-changelog', changelog)
 
       # colour text green - to be overridden by further markup as appropriate
-      changelog = "[COLOR green]" + changelog + "[/COLOR]"
+      changelog = '[COLOR green]' + changelog + '[/COLOR]'
 
       # divide changelog by new and pending entries
       if pending_changelog:
@@ -709,23 +715,22 @@ elif MODE == "UPDATE":
       changelog = "  [COLOR green]New[/COLOR]  [COLOR yellow]Postponed[/COLOR]  [COLOR red]URGENT[/COLOR]\n" + changelog
 
       # insert line breaks and numbering
-      for line in range(1, changelog.count("<ENTRY>") + 1):
-        changelog = changelog.replace("<ENTRY>", "\n\n[COLOR white]%d.[/COLOR] " % (line), 1)
+      for line in range(1, changelog.count('<ENTRY>') + 1):
+        changelog = changelog.replace('<ENTRY>', "\n\n[COLOR white]%d.[/COLOR] " % (line), 1)
 
       dialog.textviewer("retrOSMCmk2", "Changelog:%s" % (changelog))
       update = dialog.yesno("retrOSMCmk2", "Install the update or Ignore it for now?", "Ignore", "Install")
       if update == True:
         dialog.notification("retrOSMCmk2", "Updating now...", xbmcgui.NOTIFICATION_INFO, 15000)
-        xbmc.executebuiltin("ActivateWindow(busydialognocancel)")
-        ur = subprocess.run(["sudo", "/home/osmc/retrOSMCmk2/setup.sh", "UPDATE"])
-        xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
+        xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
+        ur = subprocess.run(['sudo', '/home/osmc/retrOSMCmk2/setup.sh', 'UPDATE'])
+        xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
         if ur.returncode != 0:
           # Error with the update process
           dialog.ok("retrOSMCmk2", "ERROR:\nThe update process was unsuccessful!")
           exit()
         else:
-          os.system('echo "changelog clear" > %s' % (SWITCHER_FIFO))
-          data.find("pending-changelog").text = ""
+          Eupdate.set('pending-changelog', '')
           dialog.ok("retrOSMCmk2", "Update successful.")
       else:
         dialog.ok("retrOSMCmk2", "Update ignored this time.\nYou can still manually update from the settings page.")
@@ -736,10 +741,7 @@ elif MODE == "UPDATE":
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
   # write out addon data.xml
-  xmlstr = ET.tostring(data).decode()
-  newxml = MD.parseString(xmlstr)
-  with open(DATA,"w+") as outfile:
-      outfile.write(newxml.toprettyxml(indent="",newl=""))
+  saveXML(DATA, Edata)
 
 else:
   xbmc.log("ERROR!\n\"%s\" is a bad MODE for %s" % (MODE, sys.argv[0]), level=xbmc.LOGINFO)
