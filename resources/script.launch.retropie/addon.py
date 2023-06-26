@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, pyxbmct, signal, subprocess, sys, time, xbmc, xbmcgui
+import evdev, os, pyxbmct, signal, subprocess, sys, time, xbmc, xbmcgui
 from os import path
 import xml.etree.ElementTree as ET
 from xml.dom import minidom as MD
@@ -509,19 +509,42 @@ if MODE == 'CEC':
     xbmc.log("ERROR!\n\"%s\" is a bad SUBMODE for %s" % (SUBMODE, sys.argv[0]), level=xbmc.LOGINFO)
 
 elif MODE == 'EVDEV':
-  # helper will automatically grab the device when testing to avoid a clash with Kodi - no jammer needed here
+  # ugly search for list of devices that support BTN_ codes
+  devs = [evdev.InputDevice(path) for path in evdev.list_devices()]
+  btn_devs = []
+  for dev in devs:
+    caps = list(dev.capabilities(verbose=True).values())
+    for cap in caps:
+      if "BTN_" in str(cap):
+        btn_devs.append(dev)
+        break
 
-  # ensure FIFO is in place for evdev-helper comms
-  if not path.exists(EVDEV_FIFO):
-    os.mkfifo(EVDEV_FIFO)
-
+  #  we will grab the device when testing to avoid a clash with Kodi - no jammer needed here
   if SUBMODE == 'PROGRAM':
     dialog.textviewer("Program Exit Buttons", "These will work like RetroPie.\n\nYou configure a hotkey enable button and an exit button.  For example to exit back to Emulationstation most people are configured to hold down \"select\" and press \"start\".\n\nThe enable button could be the same as RetroPie, but the switch button MUST NOT ALREADY BE ASSIGNED to anything else in RetroPie e.g. exit, reset, save/load gamestate.\n\nProgramming instructions\n1. Press OK\n2. When requested press the hotkey enable button on the gamepad.\n3. Then when requested press the gamepad button you will use for the switching function.")
 
+    # present list of devices that can be programmed
+    if not btn_devs:
+      dialog.ok("Program Exit Buttons", "No suitable devices connected!")
+      exit()
+
+    btn_dev_names = []
+    for btn_dev in btn_devs:
+        btn_dev_names.append(btn_dev.name)
+
+    chosen_dev = dialog.select("Select a device to program", btn_dev_names)
+    if chosen_dev = -1:
+      exit()
+
     # collect controller name and hotkey enable button
+    btn_devs[chosen_dev].grab()  # become the sole recipient of all incoming input events
     dialog.notification("Program Exit Buttons", "Press hotkey enable button...", xbmcgui.NOTIFICATION_INFO, 3000)
-    subprocess.run([EVHELPER, 'SCANMULTI'])
-    msg = read_FIFO(EVDEV_FIFO)
+
+    btn_devs[chosen_dev].ungrab()
+
+#    subprocess.run([EVHELPER, 'SCANMULTI'])
+#    msg = read_FIFO(EVDEV_FIFO)
+
     # validate output = gamepad-id:button-id
     gamepad = msg.split(':', 1)[0]
     hotbtncode = msg.split(':', 1)[1]
@@ -694,8 +717,6 @@ elif MODE == 'UPDATE':
         view = True
       else:
         view = dialog.yesno("retrOSMCmk2", "An new update to the addon is available.\n\nView changelog or Ignore it for now?", "Ignore", "View")
-
-# TODO why are settings and data handled differently in Tree?  And lets get a setting function written!
 
     if view == True:
       Eupdate.set('pending-changelog', changelog)
