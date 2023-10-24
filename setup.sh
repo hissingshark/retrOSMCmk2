@@ -51,7 +51,7 @@ function firstTimeSetup() {
       \nInstalling RetroPie-Setup...\n\
       " 0 0
     sleep 2
-    su osmc -c -- 'git -C submodule/ clone https://github.com/RetroPie/RetroPie-Setup.git' || { echo "FAILED!"; exit 1; }
+    su osmc -c -- 'git -C submodule/ clone -b retrosmcmk2 https://github.com/hissingshark/RetroPie-Setup.git' || { echo "FAILED!"; exit 1; }
     clear
     dialog \
       --backtitle "$BACKTITLE" \
