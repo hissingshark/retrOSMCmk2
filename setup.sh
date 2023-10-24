@@ -6,7 +6,7 @@
 #############
 
 LOGO='retrOSMCmk2'
-BACKTITLE="$LOGO - Installing RetroPie on your Vero4K"
+BACKTITLE="$LOGO - Installing RetroPie on your" # will append this with system name once established at runtime
 DIALOG_OK=0
 DIALOG_CANCEL=1
 DIALOG_ESC=255
@@ -517,23 +517,33 @@ case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
     case $cpu in
       1)
         platform="rpi2"
+        PLATFORM="RPi2"
         ;;
       2)
         platform="rpi3"
+        PLATFORM="RPi3"
         ;;
       3)
         platform="rpi4"
+        PLATFORM="RPi4"
         ;;
     esac
     ;;
   *Vero*4K*)
-    platform="vero4k"
+  platform="vero4k"
+  PLATFORM="Vero 4K"
+    ;;
+  *Vero*V*)
+  platform="vero5"
+  PLATFORM="Vero V"
+  [[ -d '/opt/vero5' ]] && [[ ! -h '/opt/vero3' ]] && ln -s /opt/vero5 /opt/vero3
     ;;
   *)
-    echo -e "*****\nUnknown platform!  $LOGO supports:\nRPi(2/3/4)\nVero (4K/4K+)\n*****\n"
+    echo -e "*****\nUnknown platform!  $LOGO supports:\nRPi(2/3/4)\nVero (4K/4K+/V)\n*****\n"
     exit 1
     ;;
 esac
+BACKTITLE="$BACKTITLE $PLATFORM"
 
 # all operations performed relative to this script
 pushd $(dirname "${BASH_SOURCE[0]}") >/dev/null
