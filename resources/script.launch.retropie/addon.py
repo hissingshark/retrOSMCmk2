@@ -533,7 +533,7 @@ elif MODE == 'EVDEV':
         btn_dev_names.append(btn_dev.name)
 
     chosen_dev = dialog.select("Select a device to program", btn_dev_names)
-    if chosen_dev = -1:
+    if chosen_dev == -1:
       exit()
 
     # collect controller name and hotkey enable button
