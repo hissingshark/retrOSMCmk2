@@ -81,18 +81,35 @@ function setMode() {
   # IF mode switching is enabled
   # AND only if the requested mode is different, else it can lose signal to TV
   # UNLESS mandatory - the framebuffer geometry reveals the new Kodi setup for 3D - a double image with a 45 pixel seperator
+  switch=1
   if [[ "$(((mvr*2+45)))" != "$fvr" ]]; then # not MANDATORY due to 3D
-    if [[ "$1" == "0" ]]; then # not enabled
-      return
-    elif [[ "$1" == "$(getMode)" ]]; then # mode same as the current one
-      return
+    if [[ "$1" == "0" ]]; then # mode switching not enabled
+      switch=0
+    elif [[ "$1" == "$(getMode)" ]]; then # requested mode same as the current one
+      switch=0
     fi
   fi
 
-  if [[ "$1" == "0" ]]; then
-    $TVSERVICE -e "CEA $(getMode)"
-  else
-    $TVSERVICE -e "CEA $1"
+  # switch as required
+  if [[ "$switch" == "1" ]]; then
+    if [[ "$1" == "0" ]]; then
+      $TVSERVICE -e "CEA $(getMode)"
+    else
+      $TVSERVICE -e "CEA $1"
+    fi
+  fi
+
+  # regardless, correct vres as required
+  if [[ "$UI4K_READY" == "1" ]]; then
+    if [[ "$2" == "mc" ]]; then # allocate max possible
+      vxres=4096
+      vyres=4410
+    elif [[ "$2" == "es" ]]; then # double buffer of current res
+      mapfile -t res < <(fbset | grep geometry | sed -e 's/^.*geometry //g' -e 's/ /\n/g') # get array of current fb res and vres
+      vxres=${res[0]}
+      vyres=$((${res[1]}*2))
+    fi
+    fbset -vxres $vxres -vyres $vyres
   fi
 }
 
@@ -107,8 +124,8 @@ CEA=(null) # CEA mode for TVService to switch mode and framebuffer geometry
 PGIDS=(null) # process-group ID
 PLATFORMS=(OSMC) # currently emulated platform
 ROMS=(Kodi) # ROM in play
-TARGETS=(null) # systemd service target
-# initialised with Kodi always as the first slot - cuts down on array index arithmetic later
+TARGETS=(null) # systemd service target -initialised with Kodi always as the first slot - cuts down on array index arithmetic later
+UI4K_READY=0 # can't be genuinely set until leaving Kodi to establish if massive vres allocated for 4K UI
 
 FIFO=/tmp/app-switcher.fifo
 if isVero; then
@@ -314,6 +331,17 @@ while true; do
       if [[ "$DESTINATION" == "es" ]]; then
         # backup the Kodi framebuffer geometry
         CEA[0]=$(getMode)
+        # check if Vero with support for 4K UI (need special handling of fb virtual res)
+        if [[ isVero ]]; then
+          # get array of res and vres
+          mapfile -t res < <(fbset | grep geometry | sed -e 's/^.*geometry //g' -e 's/ /\n/g')
+          # detect excessive vres
+          if [[ "${res[2]}" == "4096" && "${res[3]}" == "4410" ]]; then
+            UI4K_READY=1
+          else
+            UI4K_READY=0
+          fi
+        fi
 
         # shutdown or halt Kodi processes
         if [[ "$SPEED" == "slow" ]]; then
@@ -352,7 +380,7 @@ while true; do
           done
 
           # set user selected TV mode before first use of the new TTY
-          setMode $TV_MODE
+          setMode $TV_MODE $DESTINATION
 
           systemctl start emulationstation@${TARGETS[$ACTIVE_SESSION]}.service
           sleep 2
@@ -372,7 +400,7 @@ while true; do
         else
           ACTIVE_SESSION=$REQUESTED_SESSION
           # set TV mode from previous visit to session
-          setMode ${CEA[$REQUESTED_SESSION]}
+           setMode ${CEA[$REQUESTED_SESSION]} $DESTINATION
           # minimise any audio crackle on resuming PA
           sleep 0.5
           kill -CONT "-${PGIDS[$REQUESTED_SESSION]}"
@@ -419,7 +447,7 @@ while true; do
         ACTIVE_SESSION=0
 
         # restore the TV mode for Kodi
-        setMode ${CEA[$ACTIVE_SESSION]}
+        setMode ${CEA[$ACTIVE_SESSION]} $DESTINATION
 
         # stop exit methods
         systemctl stop cec-exit
