@@ -4,7 +4,7 @@ The latest RetroPie installer for OSMC
 ---
 ## Supports
 1. RPi Zero, 1, 2, 3;
-2. Vero4k/Vero4K+.
+2. Vero4k/Vero4K+/VeroV.
 
 ---
 ## Function
@@ -55,7 +55,10 @@ Vero4K/4k+ only-
 4. Fast switcher - keeps Kodi and RetroPie in memory so you can instantly toggle between them.  No need to wait for them to startup and shut down.  Also means you can switch over mid game.  This now allows up to 9 active sessions, so you can multiple games on the go.
 
 Step 7.
+
 Optional - configure you main gamepad in Kodi.  Makes moving between gaming and media much smoother as it'll be in your hands anyway!
+
+Optional - add scripts to be executed when leaving and returning to kodi.  Store them at `/home/osmc/RetroPie/scripts/` and call them `kodi-starts.sh` and `kodi-stops.sh` repectively.
 
 ---
 ## KNOWN ISSUES:
