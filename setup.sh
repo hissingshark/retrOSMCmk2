@@ -240,10 +240,10 @@ function patchRetroPie() {
   sed -i '/if \[\[ "$__os_id" != "Raspbian" ]] && ! isPlatform "armv6"; then/,/fi/s/emulationstation|//' submodule/RetroPie-Setup/scriptmodules/packages.sh
 
 
-  # RPi2/3 and Vero4k patches
-  if [[ "$platform" == rpi[2..3] || "$platform" == "vero4k" ]]; then
+  # RPi2/3 and Vero 4K/4K+/5 patches
+  if [[ "$platform" == rpi[2..3] || "$platform" == "vero4k" || "$platform" == "vero5" ]]; then
     # PATCH R23V1
-    # RetroPie no longer host the RPi2/3 binaries because OSMC is running the unsupported GL drivers - so we provide them as well as Vero4k
+    # RetroPie no longer host the RPi2/3 binaries because OSMC is running the unsupported GL drivers - so we provide them as well as Vero4k/4k+/5
     # Let RetroPie handle RPi4
     sed -i '/__binary_host="/s/.*/__binary_host="download.osmc.tv\/dev\/hissingshark"/' submodule/RetroPie-Setup/scriptmodules/system.sh
     sed -i '/__has_binaries=/s/0/1/' submodule/RetroPie-Setup/scriptmodules/system.sh
@@ -261,11 +261,10 @@ function patchRetroPie() {
   sed -i '/function get_ver_sdl2() {/,/}/s/echo ".*"/echo "2.0.20"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
   sed -i '/function get_pkg_ver_sdl2() {/,/}/s/"+.*"/"+1"/' submodule/RetroPie-Setup/scriptmodules/supplementary/sdl2.sh
 
+
   # No more patches affecting RPi
   [[ "$platform" == rpi* ]] && return 0
-
-
-  # All following patches must be for the Vero4K
+  # SO, all following patches must be for the Vero 4K/4K+/5
   # PATCH V1
   # use tvservice-shim and fbset-shim instead of the real thing and handle TTY selection
   if [[ -e  "/opt/retropie/supplementary/runcommand/runcommand.sh" ]]; then
