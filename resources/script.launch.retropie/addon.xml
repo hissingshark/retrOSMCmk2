@@ -2,10 +2,10 @@
 <addon id="script.launch.retropie" name="RetroPie" version="2.0.0" provider-name="hissingshark">
 	<requires>
     <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.pyxbmct" version="1.1.4" />
+    <import addon="script.module.pyxbmct" version="1.3.2" />
 	</requires>
 	<extension point="xbmc.python.script" library="addon.py">
-		<provides>executable</provides>
+		<provides>game</provides>
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<platform>all</platform>
